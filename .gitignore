@@ -1,0 +1,6 @@
+.pio
+.vscode/c_cpp_properties.json
+.vscode/extensions.json
+.vscode/launch.json
+src/i2c.cpp
+include/i2c.h

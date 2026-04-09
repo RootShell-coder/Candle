@@ -1,0 +1,111 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Matrix anim9x16 preview</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="art-page">
+      <section class="art-card">
+        <div class="art-copy">
+          <p class="eyebrow">Matrix preview</p>
+          <h1>anim9x16.h</h1>
+          <p class="subtitle">
+            Просмотр цикла анимации 9×16 с подробной расшифровкой текущего кадра
+            и области обновления.
+          </p>
+        </div>
+
+        <div class="matrix-shell">
+          <div
+            id="matrix"
+            class="matrix"
+            aria-label="Matrix 9x16 preview"
+          ></div>
+        </div>
+
+        <div class="status-line">
+          <span id="status">Загрузка данных анимации...</span>
+        </div>
+
+        <section class="tech-panel" aria-label="Техническая информация">
+          <h2 class="tech-title">Техническая информация</h2>
+          <div class="tech-grid">
+            <article class="tech-item">
+              <span class="tech-label">Кадр</span>
+              <strong class="tech-value" id="techFrameValue">-- / --</strong>
+              <span class="tech-note">
+                Номер текущего кадра и общее количество кадров в полном цикле.
+              </span>
+            </article>
+
+            <article class="tech-item">
+              <span class="tech-label">Area</span>
+              <strong class="tech-value" id="techAreaValue"
+                >--, --, --, --</strong
+              >
+              <span class="tech-note">
+                Координаты области обновления в формате
+                <code>x1, y1, x2, y2</code>.
+              </span>
+            </article>
+
+            <article class="tech-item">
+              <span class="tech-label">Размер области</span>
+              <strong class="tech-value" id="techAreaSize">-- × -- px</strong>
+              <span class="tech-note">
+                Сколько столбцов и строк затрагивает текущий кадр.
+              </span>
+            </article>
+
+            <article class="tech-item">
+              <span class="tech-label">Темп обновления</span>
+              <strong class="tech-value" id="techSpeedValue"
+                >40 мс ≈ 25 FPS</strong
+              >
+              <span class="tech-note">
+                Интервал между кадрами в предпросмотре страницы.
+              </span>
+            </article>
+
+            <article class="tech-item">
+              <span class="tech-label">Потребление</span>
+              <strong class="tech-value" id="techCurrentValue"
+                >~0 / ~0 мА</strong
+              >
+              <span class="tech-note">
+                Текущий кадр / среднее по всем кадрам.
+              </span>
+            </article>
+
+            <article class="tech-item">
+              <span class="tech-label">Prometheus</span>
+              <strong class="tech-value">
+                <a
+                  class="tech-link"
+                  href="/metrics"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >/metrics</a
+                >
+              </strong>
+              <span class="tech-note" id="techMetricsInfo"
+                >Uptime: -- s • Unix: --</span
+              >
+            </article>
+          </div>
+
+          <p class="tech-example" id="techExplanation">
+            Пример <code>Frame 160/268 • area 0, 2, 6, 13</code> означает:
+            сейчас отображается 160-й кадр из 268, а обновление касается
+            диапазона X=0…6 и Y=2…13.
+          </p>
+        </section>
+      </section>
+    </main>
+
+    <script src="art.js"></script>
+  </body>
+</html>

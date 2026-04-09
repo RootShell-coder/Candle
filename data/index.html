@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    <title>Свеча ESP32 — управление</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="main-wrap">
+      <section class="card">
+        <div class="card-layout">
+          <aside class="art-preview">
+            <a
+              class="art-preview-shell"
+              href="anim.html"
+              aria-label="Открыть страницу анимации"
+              title="Открыть анимацию"
+            >
+              <div id="artMatrix" class="art-matrix"></div>
+            </a>
+          </aside>
+
+          <div class="card-content">
+            <h1 class="title" id="deviceTitle">Свеча ESP32</h1>
+            <form id="settingsForm" autocomplete="off">
+              <div class="form-group">
+                <label for="brightness">Яркость, %</label>
+                <div class="range-row">
+                  <input
+                    type="range"
+                    id="brightness"
+                    min="0"
+                    max="100"
+                    value=""
+                  />
+                  <span id="brightnessValue"></span>
+                </div>
+              </div>
+              <div class="form-group toggle-row mode-row">
+                <div class="mode-control">
+                  <span class="mode-label">Ручной</span>
+                  <div class="switch-with-labels">
+                    <span class="switch-text">Выкл</span>
+                    <label class="switch">
+                      <input type="checkbox" id="candleOn" />
+                      <span class="slider"></span>
+                    </label>
+                    <span class="switch-text">Вкл</span>
+                  </div>
+                </div>
+                <div class="mode-control">
+                  <span class="mode-label">Авто</span>
+                  <div class="switch-with-labels">
+                    <span class="switch-text">Ручной</span>
+                    <label class="switch">
+                      <input type="checkbox" id="autoMode" />
+                      <span class="slider"></span>
+                    </label>
+                    <span class="switch-text">Авто</span>
+                  </div>
+                </div>
+              </div>
+              <details class="settings-details">
+                <summary>Настройки</summary>
+                <div class="settings-content">
+                  <div class="form-group">
+                    <label for="devname">Имя устройства</label>
+                    <input type="text" id="devname" value="" />
+                  </div>
+                  <div class="form-group">
+                    <label for="ssid">SSID</label>
+                    <input type="text" id="ssid" value="" />
+                  </div>
+                  <div class="form-group">
+                    <label for="password">Пароль</label>
+                    <input type="password" id="password" value="" />
+                  </div>
+                  <div class="form-group">
+                    <label for="ntp_server">Сервер времени</label>
+                    <input type="text" id="ntp_server" value="" />
+                  </div>
+                  <div class="form-group">
+                    <label for="ntp_timezone">Часовой пояс</label>
+                    <input type="text" id="ntp_timezone" value="" />
+                  </div>
+                  <div class="form-group">
+                    <label for="lat">Широта (lat)</label>
+                    <input
+                      type="text"
+                      inputmode="decimal"
+                      id="lat"
+                      value=""
+                      placeholder="55.7558"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="lon">Долгота (lon)</label>
+                    <input
+                      type="text"
+                      inputmode="decimal"
+                      id="lon"
+                      value=""
+                      placeholder="37.6173"
+                    />
+                  </div>
+                  <div class="btn-row">
+                    <button class="btn" type="submit" id="saveBtn" disabled>
+                      Сохранить
+                    </button>
+                    <button
+                      class="btn btn-secondary"
+                      type="button"
+                      id="resetBtn"
+                    >
+                      Сбросить
+                    </button>
+                  </div>
+                </div>
+              </details>
+            </form>
+            <div class="status" id="status">--:-- -- -- ----</div>
+          </div>
+        </div>
+      </section>
+    </main>
+    <script src="app.js"></script>
+    <script src="art.js"></script>
+  </body>
+</html>
