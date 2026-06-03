@@ -3,10 +3,10 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <atomic>
+#include <esp_timer.h>
 #include <time.h>
 
 #include "config.h"
-#include "ota_module.h"
 
 namespace {
 constexpr uint32_t kDefaultI2cClockHz = 100000;
@@ -74,6 +74,7 @@ std::atomic<uint32_t> s_sunAstronomicalTwilightEndMinutes{0};
 std::atomic<uint32_t> s_sunRefreshRequestsTotal{0};
 std::atomic<uint32_t> s_sunUpdateSuccessTotal{0};
 std::atomic<uint32_t> s_sunUpdateFailuresTotal{0};
+std::atomic<uint32_t> s_sunNoScheduleForcedOffTotal{0};
 
 // Преобразует enum стадии I2C в индекс массива метрик.
 size_t i2c_stage_index(I2cMetricStage stage) {
@@ -216,6 +217,7 @@ const char* sun_control_mode_name(uint32_t mode) {
   }
 }
 
+
 // Добавляет HELP/TYPE заголовок Prometheus-метрики.
 void append_meta(String& out, const char* name, const char* help, const char* type) {
   out += F("# HELP ");
@@ -238,6 +240,17 @@ void append_uint_metric(String& out, const char* name, uint32_t value) {
   out += '\n';
 }
 
+// Добавляет 64-битную беззнаковую метрику в текстовый ответ.
+void append_uint64_metric(String& out, const char* name, uint64_t value) {
+  char buffer[32];
+  snprintf(buffer, sizeof(buffer), "%llu", static_cast<unsigned long long>(value));
+
+  out += name;
+  out += ' ';
+  out += buffer;
+  out += '\n';
+}
+
 // Добавляет знаковую метрику в текстовый ответ.
 void append_int_metric(String& out, const char* name, int32_t value) {
   out += name;
@@ -252,6 +265,11 @@ void append_float_metric(String& out, const char* name, float value, unsigned in
   out += ' ';
   out += String(static_cast<double>(value), decimals);
   out += '\n';
+}
+
+// Возвращает аптайм устройства в целых секундах по монотонному 64-битному таймеру ESP32.
+uint64_t uptime_seconds_now() {
+  return static_cast<uint64_t>(esp_timer_get_time()) / 1000000ULL;
 }
 
 // Печатает значения по стадиям I2C как набор label-метрик.
@@ -284,6 +302,7 @@ void append_i2c_error_metric(String& out, const char* name, std::atomic<uint32_t
     out += '\n';
   }
 }
+
 }  // namespace
 
 // Увеличивает счётчик попыток подключения к Wi‑Fi.
@@ -486,6 +505,12 @@ void metrics_record_sun_update_failure() {
   s_sunUpdateFailuresTotal.fetch_add(1, std::memory_order_relaxed);
 }
 
+// Увеличивает счётчик принудительных отключений свечи из-за отсутствия
+// валидного расписания.
+void metrics_record_sun_no_schedule_forced_off() {
+  s_sunNoScheduleForcedOffTotal.fetch_add(1, std::memory_order_relaxed);
+}
+
 // Формирует полный Prometheus-ответ со всеми диагностическими метриками.
 String metrics_render_prometheus() {
   const Config& cfg = getConfig();
@@ -507,9 +532,9 @@ String metrics_render_prometheus() {
   append_uint_metric(out, "candle_up", 1);
 
   // `candle_uptime_seconds` — время непрерывной работы устройства после последней загрузки.
-  // Значение берется из `millis()` и переводится в секунды.
+  // Значение берется из монотонного 64-битного таймера ESP32 в целых секундах и не зависит от переполнения `millis()`.
   append_meta(out, "candle_uptime_seconds", "Seconds since boot.", "gauge");
-  append_float_metric(out, "candle_uptime_seconds", millis() / 1000.0f, 3);
+  append_uint64_metric(out, "candle_uptime_seconds", uptime_seconds_now());
 
   // `candle_heap_free_bytes` — сколько свободной RAM доступно сейчас.
   // Помогает отслеживать утечки памяти и нехватку heap.
@@ -549,9 +574,9 @@ String metrics_render_prometheus() {
   append_uint_metric(out, "candle_ntp_last_success_unixtime", s_ntpLastSuccessEpoch.load(std::memory_order_relaxed));
 
   // `candle_ota_active` — идет ли сейчас OTA-обновление прошивки.
-  // 1 = обновление активно, 0 = OTA не выполняется.
+  // OTA отключено: метрика всегда 0 для совместимости дашбордов.
   append_meta(out, "candle_ota_active", "OTA status: 1 while firmware update is active.", "gauge");
-  append_uint_metric(out, "candle_ota_active", ota_is_active() ? 1U : 0U);
+  append_uint_metric(out, "candle_ota_active", 0U);
 
   // `candle_i2c_brightness` — текущая яркость матрицы, которую использует драйвер анимации.
   // Диапазон: от 0 до 255.
@@ -733,12 +758,10 @@ String metrics_render_prometheus() {
   append_uint_metric(out, "candle_i2c_last_recovery_unixtime", s_i2cLastRecoveryEpoch.load(std::memory_order_relaxed));
 
   // `candle_device_info` — служебная метрика с label'ами устройства.
-  // Через labels отдает `devname`, читаемое имя устройства и текущий IP-адрес.
+  // Через labels отдает `devname` и текущий IP-адрес.
   append_meta(out, "candle_device_info", "Device metadata exposed as labels.", "gauge");
   out += "candle_device_info{devname=\"";
   out += escape_prometheus_label(String(cfg.wifi.devname));
-  out += "\",name=\"";
-  out += escape_prometheus_label(String(cfg.wifi.name));
   out += "\",ip=\"";
   out += escape_prometheus_label(ip);
   out += "\"} 1\n";
@@ -804,6 +827,11 @@ String metrics_render_prometheus() {
   // Если растет, устройство переходит на последние сохраненные в LittleFS значения.
   append_meta(out, "candle_sun_update_failures_total", "Failed refresh attempts for /sun_position.json.", "counter");
   append_uint_metric(out, "candle_sun_update_failures_total", s_sunUpdateFailuresTotal.load(std::memory_order_relaxed));
+
+  // `candle_sun_no_schedule_forced_off_total` — сколько раз свеча была принудительно
+  // выключена из-за полного отсутствия валидного расписания.
+  append_meta(out, "candle_sun_no_schedule_forced_off_total", "Times the candle was forced OFF because no valid schedule was available.", "counter");
+  append_uint_metric(out, "candle_sun_no_schedule_forced_off_total", s_sunNoScheduleForcedOffTotal.load(std::memory_order_relaxed));
 
   // `candle_i2c_frames_rendered_total` — сколько кадров анимации реально отправлено в LED-драйвер.
   // Растет только после успешной записи кадра и переключения страницы.

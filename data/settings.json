@@ -1,21 +1,21 @@
 {
   "wifi": {
-    "devname": "candle_light",
-    "name": "Candle",
+    "devname": "candle0",
+    "name": "Candle light",
     "ssid": "",
     "password": "",
     "power": 0,
     "phy_mode": "11n"
   },
   "ntp": {
-    "ntp_server": "ntp.ix.ru",
+    "ntp_server": "pool.ntp.org",
     "ntp_timezone": "Europe/Moscow"
   },
   "location": {
     "enabled": true,
-    "lat": 55.4997807,
-    "lng": 35.9809486
+    "lat": 55.29592,
+    "lon": 35.58514
   },
-  "brightness": 48,
+  "brightness": 100,
   "candleOn": true
 }

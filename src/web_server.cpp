@@ -11,7 +11,9 @@
 #include "config.h"
 #include "i2c.h"
 #include "metrics.h"
+#include "moon_phase.h"
 #include "ntp_module.h"
+#include "sun_offline.h"
 #include "sun_position.h"
 #include "web_server.h"
 #include "wifi_module.h"
@@ -130,6 +132,38 @@ bool parseBooleanValue(AsyncWebServerRequest* request, const char* name, bool& v
   return false;
 }
 
+// Извлекает координату из query/form-параметра; поддерживает десятичную точку и запятую.
+bool parseCoordinateParameter(AsyncWebServerRequest* request, const char* name, double& value) {
+  const AsyncWebParameter* param = nullptr;
+
+  if (request->hasParam(name)) {
+    param = request->getParam(name);
+  } else if (request->hasParam(name, true)) {
+    param = request->getParam(name, true);
+  }
+
+  if (param == nullptr) {
+    return false;
+  }
+
+  String raw = param->value();
+  raw.trim();
+  if (raw.isEmpty()) {
+    return false;
+  }
+
+  raw.replace(',', '.');
+
+  char* end = nullptr;
+  const double parsed = strtod(raw.c_str(), &end);
+  if (end == raw.c_str() || *end != '\0') {
+    return false;
+  }
+
+  value = parsed;
+  return true;
+}
+
 // Перезапускает ESP32 после небольшой задержки в отдельной задаче.
 void restartDeviceTask(void* param) {
   const uint32_t delayMs = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(param));
@@ -159,11 +193,27 @@ void scheduleDeviceRestart(uint32_t delayMs) {
 }
 }  // namespace
 
+static void sendJsonDocument(AsyncWebServerRequest* request, int code, JsonDocument& doc, bool noStore = false) {
+  AsyncResponseStream* response = request->beginResponseStream("application/json");
+  response->setCode(code);
+  if (noStore) {
+    response->addHeader("Cache-Control", "no-store, max-age=0");
+  }
+  serializeJson(doc, *response);
+  request->send(response);
+}
+
+static void sendStatusMessage(AsyncWebServerRequest* request, int code, const char* status, const char* message) {
+  JsonDocument doc;
+  doc["status"] = status;
+  doc["message"] = message;
+  sendJsonDocument(request, code, doc);
+}
+
 // Собирает JSON со всеми настройками для web-интерфейса.
-static String buildSettingsPayload() {
+static void populateSettingsDoc(JsonDocument& doc) {
   const Config& cfg = getConfig();
 
-  JsonDocument doc;
   doc["devname"] = cfg.wifi.devname;
   doc["name"] = cfg.wifi.name;
   doc["ssid"] = cfg.wifi.ssid;
@@ -177,15 +227,10 @@ static String buildSettingsPayload() {
   doc["autoCandleOn"] = sun_position_should_enable_now();
   doc["brightness"] = cfg.brightness;
   doc["candleOn"] = cfg.candleOn;
-
-  String payload;
-  serializeJson(doc, payload);
-  return payload;
 }
 
 // Формирует компактный JSON с датой и текущим солнечным режимом.
-static String buildDatePayload() {
-  JsonDocument doc;
+static void populateDateDoc(JsonDocument& doc) {
   char formatted[24] = "--:-- --.--.----";
   bool valid = false;
 
@@ -204,10 +249,6 @@ static String buildDatePayload() {
   doc["sunMode"] = sun_position_current_mode_name();
   doc["autoCandleOn"] = sun_position_should_enable_now();
   doc["candleOn"] = sun_position_is_candle_enabled();
-
-  String payload;
-  serializeJson(doc, payload);
-  return payload;
 }
 
 // Извлекает значение яркости из HTTP-параметров. Основной диапазон — 0..100%,
@@ -272,14 +313,177 @@ void web_server_setup_with_wifi() {
   // API
   server.on("/api/settings", HTTP_GET, [](AsyncWebServerRequest *request){
     metrics_record_http_request();
-    request->send(200, "application/json", buildSettingsPayload());
+    JsonDocument doc;
+    populateSettingsDoc(doc);
+    sendJsonDocument(request, 200, doc);
   });
 
   server.on("/api/date", HTTP_GET, [](AsyncWebServerRequest *request){
     metrics_record_http_request();
-    AsyncWebServerResponse *response = request->beginResponse(200, "application/json", buildDatePayload());
-    response->addHeader("Cache-Control", "no-store, max-age=0");
-    request->send(response);
+    JsonDocument doc;
+    populateDateDoc(doc);
+    sendJsonDocument(request, 200, doc, true);
+  });
+
+  server.on("/api/sun", HTTP_GET, [](AsyncWebServerRequest* request) {
+    metrics_record_http_request();
+
+    const Config& cfg = getConfig();
+    double latitude = cfg.location.lat;
+    double longitude = cfg.location.lng;
+
+    if (request->hasParam("lat") || request->hasParam("lat", true)) {
+      if (!parseCoordinateParameter(request, "lat", latitude)) {
+        sendStatusMessage(request, 400, "error", "invalid lat");
+        return;
+      }
+    }
+
+    if (request->hasParam("lon") || request->hasParam("lon", true)) {
+      if (!parseCoordinateParameter(request, "lon", longitude)) {
+        sendStatusMessage(request, 400, "error", "invalid lon");
+        return;
+      }
+    } else if (request->hasParam("lng") || request->hasParam("lng", true)) {
+      if (!parseCoordinateParameter(request, "lng", longitude)) {
+        sendStatusMessage(request, 400, "error", "invalid lng");
+        return;
+      }
+    }
+
+    if (latitude < -90.0 || latitude > 90.0 || longitude < -180.0 || longitude > 180.0) {
+      sendStatusMessage(request, 400, "error", "coordinates out of range");
+      return;
+    }
+
+    const time_t nowUtc = time(nullptr);
+    const bool hasValidTime = ntp_has_valid_time();
+    const int tzOffsetMinutes = ntp_utc_offset_minutes();
+
+    struct tm localTm {};
+    if (localtime_r(&nowUtc, &localTm) == nullptr) {
+      sendStatusMessage(request, 500, "error", "failed to resolve local time");
+      return;
+    }
+
+    SunOfflinePosition currentPosition {};
+    if (!sun_offline_calculate_position_utc(nowUtc, latitude, longitude, currentPosition)) {
+      sendStatusMessage(request, 500, "error", "failed to calculate current sun position");
+      return;
+    }
+
+    SunOfflineEvents events {};
+    if (!sun_offline_calculate_events_local_day(
+            localTm.tm_year + 1900,
+            localTm.tm_mon + 1,
+            localTm.tm_mday,
+            latitude,
+            longitude,
+            tzOffsetMinutes,
+            events)) {
+          sendStatusMessage(request, 500, "error", "failed to calculate sun events");
+      return;
+    }
+
+    const uint16_t minuteOfDay = static_cast<uint16_t>(localTm.tm_hour * 60 + localTm.tm_min);
+    const SunOfflineMode currentMode = sun_offline_mode_from_events(minuteOfDay, events);
+
+    struct tm midnightLocal = localTm;
+    midnightLocal.tm_hour = 0;
+    midnightLocal.tm_min = 0;
+    midnightLocal.tm_sec = 0;
+    const time_t midnightEpoch = mktime(&midnightLocal);
+
+    JsonDocument doc;
+    doc["status"] = "ok";
+    doc["validTime"] = hasValidTime;
+    doc["timestamp"] = static_cast<uint32_t>(nowUtc);
+    doc["timezoneOffsetMinutes"] = tzOffsetMinutes;
+    doc["sunMode"] = sun_offline_mode_name(currentMode);
+
+    JsonObject location = doc["location"].to<JsonObject>();
+    location["lat"] = latitude;
+    location["lon"] = longitude;
+
+    JsonObject date = doc["date"].to<JsonObject>();
+    date["year"] = localTm.tm_year + 1900;
+    date["month"] = localTm.tm_mon + 1;
+    date["day"] = localTm.tm_mday;
+
+    JsonObject now = doc["now"].to<JsonObject>();
+    now["minuteOfDay"] = minuteOfDay;
+    now["azimuth"] = currentPosition.azimuth_deg;
+    now["elevation"] = currentPosition.elevation_deg;
+    now["zenith"] = currentPosition.zenith_deg;
+    now["declination"] = currentPosition.declination_deg;
+    now["equationOfTime"] = currentPosition.equation_of_time_min;
+
+    JsonObject eventsObj = doc["events"].to<JsonObject>();
+    eventsObj["hasSunrise"] = events.has_sunrise;
+    eventsObj["hasSunset"] = events.has_sunset;
+    eventsObj["hasCivilTwilight"] = events.has_civil_twilight;
+    eventsObj["hasNauticalTwilight"] = events.has_nautical_twilight;
+    eventsObj["hasAstronomicalTwilight"] = events.has_astronomical_twilight;
+    eventsObj["isPolarDay"] = events.is_polar_day;
+    eventsObj["isPolarNight"] = events.is_polar_night;
+    eventsObj["sunrise"] = events.sunrise_minute;
+    eventsObj["sunset"] = events.sunset_minute;
+    eventsObj["civilBegin"] = events.civil_begin_minute;
+    eventsObj["civilEnd"] = events.civil_end_minute;
+    eventsObj["nauticalBegin"] = events.nautical_begin_minute;
+    eventsObj["nauticalEnd"] = events.nautical_end_minute;
+    eventsObj["astronomicalBegin"] = events.astronomical_begin_minute;
+    eventsObj["astronomicalEnd"] = events.astronomical_end_minute;
+
+    JsonArray path = doc["path"].to<JsonArray>();
+    for (uint16_t minute = 0; minute < 1440; minute += 10) {
+      if ((minute % 60U) == 0U) {
+        delay(0);
+      }
+
+      SunOfflinePosition sample {};
+      const time_t sampleEpoch = midnightEpoch + static_cast<time_t>(minute) * 60;
+
+      if (!sun_offline_calculate_position_utc(sampleEpoch, latitude, longitude, sample)) {
+        continue;
+      }
+
+      JsonObject point = path.add<JsonObject>();
+      point["minute"] = minute;
+      point["azimuth"] = static_cast<float>(sample.azimuth_deg);
+      point["elevation"] = static_cast<float>(sample.elevation_deg);
+      point["mode"] = sun_offline_mode_name(sun_offline_mode_from_elevation(sample.elevation_deg));
+    }
+    if (doc.overflowed()) {
+      sendStatusMessage(request, 503, "error", "insufficient memory for sun payload");
+      return;
+    }
+
+    sendJsonDocument(request, 200, doc, true);
+  });
+
+  server.on("/api/moon", HTTP_GET, [](AsyncWebServerRequest* request) {
+    metrics_record_http_request();
+
+    const bool hasValidTime = ntp_has_valid_time();
+    const time_t nowUtc = time(nullptr);
+
+    MoonPhase mp {};
+    if (!moon_phase_calculate(nowUtc, mp)) {
+      sendStatusMessage(request, 503, "error", "time not available");
+      return;
+    }
+
+    JsonDocument doc;
+    doc["status"]       = "ok";
+    doc["validTime"]    = hasValidTime;
+    doc["timestamp"]    = static_cast<uint32_t>(nowUtc);
+    doc["ageDays"]      = mp.age_days;
+    doc["illumination"] = mp.illumination;
+    doc["phase"]        = static_cast<uint8_t>(mp.phase);
+    doc["phaseName"]    = moon_phase_name(mp.phase);
+
+    sendJsonDocument(request, 200, doc, true);
   });
 
   server.on("/api/save", HTTP_POST, [](AsyncWebServerRequest *request) {
@@ -294,7 +498,7 @@ void web_server_setup_with_wifi() {
 
     String* body = static_cast<String*>(request->_tempObject);
     if (body == nullptr) {
-      request->send(500, "application/json", "{\"status\":\"error\",\"message\":\"request buffer allocation failed\"}");
+      sendStatusMessage(request, 500, "error", "request buffer allocation failed");
       return;
     }
 
@@ -309,7 +513,7 @@ void web_server_setup_with_wifi() {
     request->_tempObject = nullptr;
 
     if (error) {
-      request->send(400, "application/json", "{\"status\":\"error\",\"message\":\"invalid JSON payload\"}");
+      sendStatusMessage(request, 400, "error", "invalid JSON payload");
       return;
     }
 
@@ -354,13 +558,17 @@ void web_server_setup_with_wifi() {
     }
 
     if (!configSave()) {
-      request->send(500, "application/json", "{\"status\":\"error\",\"message\":\"failed to save settings\"}");
+      sendStatusMessage(request, 500, "error", "failed to save settings");
       return;
     }
 
     const bool outputOn = cfg.location.enabled ? sun_position_should_enable_now() : cfg.candleOn;
     i2c_set_brightness(outputOn ? cfg.brightness : 0);
-    request->send(200, "application/json", "{\"status\":\"ok\",\"restarting\":true,\"message\":\"settings saved, device restarting\"}");
+    JsonDocument docResponse;
+    docResponse["status"] = "ok";
+    docResponse["restarting"] = true;
+    docResponse["message"] = "settings saved, device restarting";
+    sendJsonDocument(request, 200, docResponse);
     scheduleDeviceRestart(750);
   });
 
@@ -369,12 +577,15 @@ void web_server_setup_with_wifi() {
     configResetToDefault();
 
     if (!configSave()) {
-      request->send(500, "application/json", "{\"status\":\"error\",\"message\":\"failed to clear Wi-Fi credentials\"}");
+      sendStatusMessage(request, 500, "error", "failed to clear Wi-Fi credentials");
       return;
     }
 
     i2c_set_brightness(getConfig().brightness);
-    request->send(200, "application/json", "{\"status\":\"ok\",\"message\":\"Wi-Fi credentials cleared, device restarting\"}");
+    JsonDocument doc;
+    doc["status"] = "ok";
+    doc["message"] = "Wi-Fi credentials cleared, device restarting";
+    sendJsonDocument(request, 200, doc);
     scheduleDeviceRestart(750);
   });
 
@@ -382,14 +593,16 @@ void web_server_setup_with_wifi() {
     metrics_record_http_request();
 
     if (request->method() == HTTP_GET) {
-      String payload = "{\"status\":\"ok\",\"brightness\":" + String(getConfig().brightness) + "}";
-      request->send(200, "application/json", payload);
+      JsonDocument doc;
+      doc["status"] = "ok";
+      doc["brightness"] = getConfig().brightness;
+      sendJsonDocument(request, 200, doc);
       return;
     }
 
     uint8_t value = 0;
     if (!parseBrightnessValue(request, value)) {
-      request->send(400, "application/json", "{\"status\":\"error\",\"message\":\"brightness must be an integer percent from 0 to 100\"}");
+      sendStatusMessage(request, 400, "error", "brightness must be an integer percent from 0 to 100");
       return;
     }
 
@@ -417,22 +630,18 @@ void web_server_setup_with_wifi() {
     i2c_set_brightness(outputOn ? value : 0);
 
     if (!configSave()) {
-      request->send(500, "application/json", "{\"status\":\"error\",\"message\":\"failed to save brightness\"}");
+      sendStatusMessage(request, 500, "error", "failed to save brightness");
       return;
     }
 
-    String payload = String("{\"status\":\"ok\",\"brightness\":") +
-                     String(value) +
-                     ",\"candleOn\":" +
-                     (cfg.candleOn ? "true" : "false") +
-                     ",\"autoMode\":" +
-                     (cfg.location.enabled ? "true" : "false") +
-                     ",\"autoCandleOn\":" +
-                     (autoCandleOn ? "true" : "false") +
-                     ",\"sunMode\":\"" +
-                     String(sun_position_current_mode_name()) +
-                     "\"}";
-    request->send(200, "application/json", payload);
+    JsonDocument doc;
+    doc["status"] = "ok";
+    doc["brightness"] = value;
+    doc["candleOn"] = cfg.candleOn;
+    doc["autoMode"] = cfg.location.enabled;
+    doc["autoCandleOn"] = autoCandleOn;
+    doc["sunMode"] = sun_position_current_mode_name();
+    sendJsonDocument(request, 200, doc);
   });
 
   server.on("/metrics", HTTP_GET, [](AsyncWebServerRequest *request){

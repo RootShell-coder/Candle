@@ -205,7 +205,16 @@ void ntp_init() {
   s_lastRequestedEpoch = 0;
   s_lastServer[0] = '\0';
   s_lastTimezone[0] = '\0';
-  strlcpy(s_posixTimezone, "UTC0", sizeof(s_posixTimezone));
+
+  // Применяем таймзону из конфига немедленно, чтобы localtime_r() и
+  // ntp_utc_offset_minutes() работали корректно ещё до первой NTP-синхронизации.
+  // Критично для расчёта расписания рассвета/заката при старте, когда RTC
+  // содержит валидное время, но WiFi ещё не подключён.
+  const char* posixTz = ntp_resolve_timezone(getConfig().ntp.ntp_timezone);
+  setenv("TZ", posixTz, 1);
+  tzset();
+  Serial.printf("[ntp] init, timezone '%s' -> '%s'\n",
+                getConfig().ntp.ntp_timezone, posixTz);
 }
 
 // Основной обработчик NTP-модуля: отслеживает состояние Wi‑Fi,
@@ -270,4 +279,22 @@ void ntp_handle() {
 // базовую проверку на валидность и может использоваться приложением.
 bool ntp_has_valid_time() {
   return ntp_time_is_valid(time(nullptr));
+}
+
+// Возвращает смещение локального времени от UTC в минутах для текущего момента.
+// Использует TZ env-переменную, выставленную NTP-модулем из конфига.
+// Учитывает DST: значение корректно для текущего момента (летнее/зимнее время).
+int ntp_utc_offset_minutes() {
+  const time_t now = time(nullptr);
+  struct tm utcTm {};
+  if (gmtime_r(&now, &utcTm) == nullptr) {
+    return 0;
+  }
+  // mktime интерпретирует структуру как local-время и возвращает UTC-эпоху.
+  // Разница между исходным UTC и «переинтерпретированным» равна смещению TZ.
+  const time_t interpretedAsLocal = mktime(&utcTm);
+  if (interpretedAsLocal == static_cast<time_t>(-1)) {
+    return 0;
+  }
+  return static_cast<int>(difftime(now, interpretedAsLocal) / 60.0);
 }

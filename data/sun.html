@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    <title>Солнечный путь</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="sun-page">
+    <main class="wrap">
+      <div class="title-row">
+        <h1>Положение Солнца</h1>
+        <a class="back" href="/index.html">Назад к управлению</a>
+      </div>
+
+      <section class="toolbar">
+        <div class="meta" id="meta">Загрузка...</div>
+      </section>
+
+      <section class="panel">
+        <canvas
+          id="sunCanvas"
+          width="1080"
+          height="685"
+          aria-label="График пути солнца"
+        ></canvas>
+        <div class="warn" id="warn"></div>
+        <div class="stats" id="stats"></div>
+        <div class="events" id="events"></div>
+      </section>
+    </main>
+
+    <script src="sun.js"></script>
+  </body>
+</html>

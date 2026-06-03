@@ -91,8 +91,8 @@ static void setDefaultConfig() {
   strlcpy(currentConfig.ntp.ntp_timezone, "Europe/London", sizeof(currentConfig.ntp.ntp_timezone));
 
   currentConfig.location.enabled = true;
-  currentConfig.location.lat = 51.5287398;
-  currentConfig.location.lng = -0.2664056;
+  currentConfig.location.lat = 55.29592;
+  currentConfig.location.lng = 35.58514;
   currentConfig.brightness = 16;
   currentConfig.candleOn = true;
 }

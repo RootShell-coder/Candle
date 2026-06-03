@@ -54,5 +54,6 @@ void metrics_set_sun_schedule(uint32_t updatedAtEpoch,
 void metrics_record_sun_refresh_request();
 void metrics_record_sun_update_success();
 void metrics_record_sun_update_failure();
+void metrics_record_sun_no_schedule_forced_off();
 
 String metrics_render_prometheus();

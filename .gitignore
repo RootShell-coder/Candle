@@ -2,5 +2,9 @@
 .vscode/c_cpp_properties.json
 .vscode/extensions.json
 .vscode/launch.json
+*.log
+doc/arch/*.zip
+doc/arch/*.7z
+
 src/i2c.cpp
 include/i2c.h

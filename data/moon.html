@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    <title>Фаза луны</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="moon-page">
+    <main class="wrap">
+      <div class="title-row">
+        <h1>Фаза Луны</h1>
+        <a class="back" href="/index.html">Назад к управлению</a>
+      </div>
+
+      <section class="moon-panel">
+        <div class="moon-canvas-wrap">
+          <canvas
+            id="moonCanvas"
+            width="480"
+            height="480"
+            aria-label="Визуализация фазы луны"
+          ></canvas>
+        </div>
+        <div class="moon-info" id="moonInfo">
+          <div class="moon-spinner">Загрузка…</div>
+        </div>
+      </section>
+
+      <section class="moon-cycle-section">
+        <h2 class="moon-cycle-title">Лунный цикл</h2>
+        <div class="moon-cycle" id="moonCycle"></div>
+      </section>
+    </main>
+
+    <script src="moon.js"></script>
+  </body>
+</html>

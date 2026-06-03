@@ -6,7 +6,6 @@
 #include "freetros_module.h"
 #include "i2c.h"
 #include "ntp_module.h"
-#include "ota_module.h"
 #include "sun_position.h"
 #include "web_server.h"
 #include "wifi_module.h"
@@ -17,7 +16,6 @@ constexpr uint32_t kAnimFrameMs = 40;
 constexpr uint32_t kNetworkRetryMs = 1000;
 constexpr uint32_t kNetworkConnectedMs = 250;
 constexpr uint32_t kCaptivePortalMs = 25;
-constexpr uint32_t kOtaActiveMs = 20;
 constexpr uint32_t kAnimTaskStack = 3072;
 constexpr uint32_t kNetworkTaskStack = 6144;
 constexpr BaseType_t kNetworkCore = 0;
@@ -25,21 +23,15 @@ constexpr BaseType_t kAnimCore = 1;
 
 TaskHandle_t networkTaskHandle = nullptr;
 TaskHandle_t i2cAnimTaskHandle = nullptr;
-bool s_otaStarted = false;
 bool s_webServerStarted = false;
 
-// Запускает OTA после подключения к Wi‑Fi и web‑сервер также для captive portal.
+// Запускает web‑сервер при Wi‑Fi или captive portal.
 void ensure_network_services_started() {
   const bool staConnected = WiFi.status() == WL_CONNECTED;
   const bool captivePortalActive = wifi_is_captive_portal_active();
 
   if (!staConnected && !captivePortalActive) {
     return;
-  }
-
-  if (staConnected && !s_otaStarted) {
-    setupOTA();
-    s_otaStarted = true;
   }
 
   if (!s_webServerStarted) {
@@ -62,7 +54,7 @@ static void i2c_anim_task_freertos(void* pvParameters) {
   }
 }
 
-// Основная сетевая задача: reconnect Wi‑Fi, запуск сервисов, captive portal и обработка OTA.
+// Основная сетевая задача: reconnect Wi‑Fi, запуск сервисов и captive portal.
 static void network_service_task(void* pvParameters) {
   (void)pvParameters;
 
@@ -71,14 +63,8 @@ static void network_service_task(void* pvParameters) {
     ensure_network_services_started();
     ntp_handle();
 
-    if (WiFi.status() == WL_CONNECTED && s_otaStarted) {
-      handleOTA();
-    }
-
     uint32_t delayMs = kNetworkRetryMs;
-    if (ota_is_active()) {
-      delayMs = kOtaActiveMs;
-    } else if (wifi_is_captive_portal_active()) {
+    if (wifi_is_captive_portal_active()) {
       delayMs = kCaptivePortalMs;
     } else if (WiFi.status() == WL_CONNECTED) {
       delayMs = kNetworkConnectedMs;
@@ -90,7 +76,6 @@ static void network_service_task(void* pvParameters) {
 
 // Создаёт и распределяет задачи FreeRTOS по ядрам ESP32.
 void freertos_init() {
-  s_otaStarted = false;
   s_webServerStarted = false;
   ntp_init();
   sun_position_init();

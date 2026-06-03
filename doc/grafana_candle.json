@@ -32,171 +32,6 @@
         "type": "prometheus",
         "uid": "efjej6af0v0g0e"
       },
-      "description": "Wi-Fi link state.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [
-            {
-              "options": {
-                "0": {
-                  "text": "Offline"
-                },
-                "1": {
-                  "text": "Connected"
-                }
-              },
-              "type": "value"
-            }
-          ],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "green",
-                "value": 1
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 2,
-        "x": 0,
-        "y": 0
-      },
-      "id": 2,
-      "options": {
-        "colorMode": "none",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "11.5.2",
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "candle_wifi_connected{job=\"candle-light\"}",
-          "legendFormat": "",
-          "range": true,
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "efjej6af0v0g0e"
-          },
-          "expr": "",
-          "hide": false,
-          "instant": false,
-          "range": true,
-          "refId": "B"
-        }
-      ],
-      "title": "Wi-Fi",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "efjej6af0v0g0e"
-      },
-      "description": "1 when firmware responds to Prometheus scrapes.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [
-            {
-              "options": {
-                "0": {
-                  "text": "Down"
-                },
-                "1": {
-                  "text": "Up"
-                }
-              },
-              "type": "value"
-            }
-          ],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "green",
-                "value": 1
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 2,
-        "x": 2,
-        "y": 0
-      },
-      "id": 1,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "11.5.2",
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "candle_up{job=\"candle-light\"}",
-          "legendFormat": "",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Firmware",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "efjej6af0v0g0e"
-      },
       "description": "Current lighting source mode.",
       "fieldConfig": {
         "defaults": {
@@ -235,7 +70,7 @@
       "gridPos": {
         "h": 3,
         "w": 2,
-        "x": 4,
+        "x": 0,
         "y": 0
       },
       "id": 4,
@@ -267,32 +102,19 @@
         }
       ],
       "title": "Control Mode",
+      "transparent": true,
       "type": "stat"
     },
     {
       "datasource": {
-        "type": "prometheus",
         "uid": "efjej6af0v0g0e"
       },
-      "description": "OTA update state.",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
-          "mappings": [
-            {
-              "options": {
-                "0": {
-                  "text": "Idle"
-                },
-                "1": {
-                  "text": "Running"
-                }
-              },
-              "type": "value"
-            }
-          ],
+          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -301,7 +123,7 @@
                 "value": null
               },
               {
-                "color": "orange",
+                "color": "red",
                 "value": 1
               }
             ]
@@ -312,14 +134,14 @@
       "gridPos": {
         "h": 3,
         "w": 2,
-        "x": 6,
+        "x": 2,
         "y": 0
       },
-      "id": 3,
+      "id": 19,
       "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "center",
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
         "orientation": "auto",
         "percentChangeColorMode": "standard",
         "reduceOptions": {
@@ -337,13 +159,14 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "candle_ota_active{job=\"candle-light\"}",
-          "legendFormat": "",
+          "expr": "candle_sun_last_failure_reason_code",
+          "legendFormat": "__auto",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "OTA",
+      "title": "Api SunPosition ",
+      "transparent": true,
       "type": "stat"
     },
     {
@@ -375,7 +198,7 @@
       "gridPos": {
         "h": 3,
         "w": 2,
-        "x": 8,
+        "x": 4,
         "y": 0
       },
       "id": 18,
@@ -436,8 +259,8 @@
       },
       "gridPos": {
         "h": 3,
-        "w": 3,
-        "x": 10,
+        "w": 2,
+        "x": 6,
         "y": 0
       },
       "id": 17,
@@ -623,7 +446,253 @@
         }
       ],
       "title": "Heap",
+      "transparent": true,
       "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "efjej6af0v0g0e"
+      },
+      "description": "1 when firmware responds to Prometheus scrapes.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "text": "Down"
+                },
+                "1": {
+                  "text": "Up"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 2,
+        "x": 0,
+        "y": 3
+      },
+      "id": 1,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "candle_up{job=\"candle-light\"}",
+          "legendFormat": "",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Firmware",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "efjej6af0v0g0e"
+      },
+      "description": "OTA update state.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "text": "Idle"
+                },
+                "1": {
+                  "text": "Running"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 2,
+        "x": 2,
+        "y": 3
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "candle_ota_active{job=\"candle-light\"}",
+          "legendFormat": "",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "OTA",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "efjej6af0v0g0e"
+      },
+      "description": "Wi-Fi link state.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "text": "Offline"
+                },
+                "1": {
+                  "text": "Connected"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 4,
+        "x": 4,
+        "y": 3
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "candle_wifi_connected{job=\"candle-light\"}",
+          "legendFormat": "",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "efjej6af0v0g0e"
+          },
+          "expr": "",
+          "hide": false,
+          "instant": false,
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Wi-Fi",
+      "transparent": true,
+      "type": "stat"
     },
     {
       "datasource": {
@@ -661,10 +730,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 4,
+        "h": 3,
         "w": 13,
         "x": 0,
-        "y": 3
+        "y": 6
       },
       "id": 5,
       "options": {
@@ -709,6 +778,7 @@
         }
       ],
       "title": "Brightness",
+      "transparent": true,
       "type": "bargauge"
     },
     {
@@ -817,7 +887,7 @@
         "h": 11,
         "w": 13,
         "x": 0,
-        "y": 7
+        "y": 9
       },
       "id": 8,
       "options": {
@@ -861,112 +931,8 @@
         }
       ],
       "title": "I2C Render Activity",
+      "transparent": true,
       "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "efjej6af0v0g0e"
-      },
-      "description": "Error counters and bus recovery rates over the current time range.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "decimals": 0,
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "orange",
-                "value": 1
-              },
-              {
-                "color": "red",
-                "value": 10
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 11,
-        "x": 13,
-        "y": 9
-      },
-      "id": 12,
-      "options": {
-        "displayMode": "lcd",
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": false
-        },
-        "maxVizHeight": 300,
-        "minVizHeight": 10,
-        "minVizWidth": 0,
-        "namePlacement": "left",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showUnfilled": true,
-        "sizing": "auto",
-        "valueMode": "color"
-      },
-      "pluginVersion": "11.5.2",
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "increase(candle_i2c_errors_total{job=\"candle-light\"}[$__range])",
-          "legendFormat": "I2C Errors",
-          "range": true,
-          "refId": "A"
-        },
-        {
-          "editorMode": "code",
-          "expr": "increase(candle_i2c_recoveries_total{job=\"candle-light\"}[$__range])",
-          "legendFormat": "Recoveries",
-          "range": true,
-          "refId": "B"
-        },
-        {
-          "editorMode": "code",
-          "expr": "increase(candle_i2c_recovery_failures_total{job=\"candle-light\"}[$__range])",
-          "legendFormat": "Recovery Failures",
-          "range": true,
-          "refId": "C"
-        },
-        {
-          "editorMode": "code",
-          "expr": "increase(candle_i2c_clock_fallbacks_total{job=\"candle-light\"}[$__range])",
-          "legendFormat": "Clock Fallbacks",
-          "range": true,
-          "refId": "D"
-        },
-        {
-          "editorMode": "code",
-          "expr": "increase(candle_i2c_clock_restores_total{job=\"candle-light\"}[$__range])",
-          "legendFormat": "Clock Restores",
-          "range": true,
-          "refId": "E"
-        }
-      ],
-      "title": "I2C Error Counters",
-      "type": "bargauge"
     },
     {
       "datasource": {
@@ -1078,7 +1044,7 @@
         "h": 11,
         "w": 11,
         "x": 13,
-        "y": 13
+        "y": 9
       },
       "id": 14,
       "options": {
@@ -1130,6 +1096,7 @@
         }
       ],
       "title": "I2C Throughput",
+      "transparent": true,
       "type": "timeseries"
     },
     {
@@ -1137,128 +1104,11 @@
         "type": "prometheus",
         "uid": "efjej6af0v0g0e"
       },
-      "description": "Success and failure rates by I2C stage.",
+      "description": "Error counters and bus recovery rates over the current time range.",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "decimals": 2,
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "orange",
-                "value": 0.1
-              },
-              {
-                "color": "red",
-                "value": 1
-              }
-            ]
-          },
-          "unit": "ops"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 15,
-        "w": 13,
-        "x": 0,
-        "y": 18
-      },
-      "id": 15,
-      "options": {
-        "legend": {
-          "calcs": [
-            "lastNotNull",
-            "max"
-          ],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "multi",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "11.5.2",
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "rate(candle_i2c_stage_failures_total{job=\"candle-light\"}[$__rate_interval])",
-          "legendFormat": "{{stage}} failures/s",
-          "range": true,
-          "refId": "A"
-        },
-        {
-          "editorMode": "code",
-          "expr": "rate(candle_i2c_stage_retries_total{job=\"candle-light\"}[$__rate_interval])",
-          "legendFormat": "{{stage}} retries/s",
-          "range": true,
-          "refId": "B"
-        },
-        {
-          "editorMode": "code",
-          "expr": "rate(candle_i2c_stage_success_total{job=\"candle-light\"}[$__rate_interval])",
-          "legendFormat": "{{stage}} success/s",
-          "range": true,
-          "refId": "C"
-        }
-      ],
-      "title": "I2C Stage Rates",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "efjej6af0v0g0e"
-      },
-      "description": "Current low-level I2C health indicators.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
           },
           "decimals": 0,
           "mappings": [],
@@ -1275,263 +1125,22 @@
               },
               {
                 "color": "red",
-                "value": 2
+                "value": 10
               }
             ]
           }
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Clock Hz"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "hertz"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Fallback"
-            },
-            "properties": [
-              {
-                "id": "mappings",
-                "value": [
-                  {
-                    "options": {
-                      "0": {
-                        "text": "off"
-                      },
-                      "1": {
-                        "text": "active"
-                      }
-                    },
-                    "type": "value"
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 11,
-        "x": 13,
-        "y": 24
-      },
-      "id": 13,
-      "options": {
-        "displayMode": "basic",
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": false
-        },
-        "maxVizHeight": 300,
-        "minVizHeight": 10,
-        "minVizWidth": 0,
-        "namePlacement": "auto",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showUnfilled": true,
-        "sizing": "auto",
-        "valueMode": "color"
-      },
-      "pluginVersion": "11.5.2",
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "candle_i2c_clock_hz{job=\"candle-light\"}",
-          "legendFormat": "Clock Hz",
-          "range": true,
-          "refId": "A"
-        },
-        {
-          "editorMode": "code",
-          "expr": "candle_i2c_clock_fallback_active{job=\"candle-light\"}",
-          "legendFormat": "Fallback",
-          "range": true,
-          "refId": "B"
-        },
-        {
-          "editorMode": "code",
-          "expr": "candle_i2c_consecutive_errors{job=\"candle-light\"}",
-          "legendFormat": "Consecutive Errors",
-          "range": true,
-          "refId": "C"
-        },
-        {
-          "editorMode": "code",
-          "expr": "candle_i2c_last_error_code{job=\"candle-light\"}",
-          "legendFormat": "Last Error Code",
-          "range": true,
-          "refId": "D"
-        },
-        {
-          "editorMode": "code",
-          "expr": "candle_i2c_last_recovery_duration_milliseconds{job=\"candle-light\"}",
-          "legendFormat": "Recovery ms",
-          "range": true,
-          "refId": "E"
-        }
-      ],
-      "title": "I2C Health",
-      "type": "bargauge"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "efjej6af0v0g0e"
-      },
-      "description": "Wi-Fi signal trend.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "max": -30,
-          "min": -100,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "orange",
-                "value": -80
-              },
-              {
-                "color": "green",
-                "value": -67
-              }
-            ]
-          },
-          "unit": "dBm"
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 9,
-        "w": 8,
+        "h": 7,
+        "w": 13,
         "x": 0,
-        "y": 33
+        "y": 20
       },
-      "id": 7,
+      "id": 21,
       "options": {
-        "legend": {
-          "calcs": [
-            "lastNotNull",
-            "min",
-            "max"
-          ],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "11.5.2",
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "candle_wifi_rssi_dbm{job=\"candle-light\"}",
-          "legendFormat": "RSSI",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Wi-Fi RSSI",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "efjej6af0v0g0e"
-      },
-      "description": "Sun schedule loaded from /sun_position.json in minutes from midnight.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "mappings": [],
-          "max": 1440,
-          "min": 0,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          },
-          "unit": "m"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 8,
-        "x": 8,
-        "y": 33
-      },
-      "id": 10,
-      "options": {
-        "displayMode": "gradient",
+        "displayMode": "lcd",
         "legend": {
           "calcs": [],
           "displayMode": "list",
@@ -1558,62 +1167,120 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "candle_sun_sunrise_minutes{job=\"candle-light\"}",
-          "legendFormat": "Sunrise",
+          "expr": "candle_sun_update_failures_by_reason_total",
+          "legendFormat": "{{reason}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Api Error Counters",
+      "transparent": true,
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "efjej6af0v0g0e"
+      },
+      "description": "Error counters and bus recovery rates over the current time range.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 10
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 11,
+        "x": 13,
+        "y": 20
+      },
+      "id": 12,
+      "options": {
+        "displayMode": "lcd",
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "maxVizHeight": 300,
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "namePlacement": "left",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "sizing": "auto",
+        "valueMode": "color"
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "increase(candle_i2c_errors_total{job=\"candle-light\"}[$__range])",
+          "legendFormat": "I2C Errors",
           "range": true,
           "refId": "A"
         },
         {
           "editorMode": "code",
-          "expr": "candle_sun_sunset_minutes{job=\"candle-light\"}",
-          "legendFormat": "Sunset",
+          "expr": "increase(candle_i2c_recoveries_total{job=\"candle-light\"}[$__range])",
+          "legendFormat": "Recoveries",
           "range": true,
           "refId": "B"
         },
         {
           "editorMode": "code",
-          "expr": "candle_sun_civil_twilight_begin_minutes{job=\"candle-light\"}",
-          "legendFormat": "Civil Begin",
+          "expr": "increase(candle_i2c_recovery_failures_total{job=\"candle-light\"}[$__range])",
+          "legendFormat": "Recovery Failures",
           "range": true,
           "refId": "C"
         },
         {
           "editorMode": "code",
-          "expr": "candle_sun_civil_twilight_end_minutes{job=\"candle-light\"}",
-          "legendFormat": "Civil End",
+          "expr": "increase(candle_i2c_clock_fallbacks_total{job=\"candle-light\"}[$__range])",
+          "legendFormat": "Clock Fallbacks",
           "range": true,
           "refId": "D"
         },
         {
           "editorMode": "code",
-          "expr": "candle_sun_nautical_twilight_begin_minutes{job=\"candle-light\"}",
-          "legendFormat": "Nautical Begin",
+          "expr": "increase(candle_i2c_clock_restores_total{job=\"candle-light\"}[$__range])",
+          "legendFormat": "Clock Restores",
           "range": true,
           "refId": "E"
-        },
-        {
-          "editorMode": "code",
-          "expr": "candle_sun_nautical_twilight_end_minutes{job=\"candle-light\"}",
-          "legendFormat": "Nautical End",
-          "range": true,
-          "refId": "F"
-        },
-        {
-          "editorMode": "code",
-          "expr": "candle_sun_astronomical_twilight_begin_minutes{job=\"candle-light\"}",
-          "legendFormat": "Astronomical Begin",
-          "range": true,
-          "refId": "G"
-        },
-        {
-          "editorMode": "code",
-          "expr": "candle_sun_astronomical_twilight_end_minutes{job=\"candle-light\"}",
-          "legendFormat": "Astronomical End",
-          "range": true,
-          "refId": "H"
         }
       ],
-      "title": "Sun Schedule",
+      "title": "I2C Error Counters",
+      "transparent": true,
       "type": "bargauge"
     },
     {
@@ -1642,14 +1309,14 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 9,
-        "w": 8,
-        "x": 16,
-        "y": 33
+        "h": 8,
+        "w": 13,
+        "x": 0,
+        "y": 27
       },
       "id": 16,
       "options": {
-        "displayMode": "gradient",
+        "displayMode": "lcd",
         "legend": {
           "calcs": [],
           "displayMode": "list",
@@ -1740,6 +1407,494 @@
       ],
       "title": "Service Counters",
       "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "efjej6af0v0g0e"
+      },
+      "description": "Current low-level I2C health indicators.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 2
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Clock Hz"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "hertz"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Fallback"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "0": {
+                        "text": "off"
+                      },
+                      "1": {
+                        "text": "active"
+                      }
+                    },
+                    "type": "value"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 11,
+        "x": 13,
+        "y": 27
+      },
+      "id": 13,
+      "options": {
+        "displayMode": "lcd",
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "maxVizHeight": 300,
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "namePlacement": "left",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "sizing": "auto",
+        "valueMode": "color"
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "candle_i2c_clock_hz{job=\"candle-light\"}",
+          "legendFormat": "Clock Hz",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "editorMode": "code",
+          "expr": "candle_i2c_clock_fallback_active{job=\"candle-light\"}",
+          "legendFormat": "Fallback",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "editorMode": "code",
+          "expr": "candle_i2c_consecutive_errors{job=\"candle-light\"}",
+          "legendFormat": "Consecutive Errors",
+          "range": true,
+          "refId": "C"
+        },
+        {
+          "editorMode": "code",
+          "expr": "candle_i2c_last_error_code{job=\"candle-light\"}",
+          "legendFormat": "Last Error Code",
+          "range": true,
+          "refId": "D"
+        },
+        {
+          "editorMode": "code",
+          "expr": "candle_i2c_last_recovery_duration_milliseconds{job=\"candle-light\"}",
+          "legendFormat": "Recovery ms",
+          "range": true,
+          "refId": "E"
+        }
+      ],
+      "title": "I2C Health",
+      "transparent": true,
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "efjej6af0v0g0e"
+      },
+      "description": "Success and failure rates by I2C stage.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 2,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 0.1
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 19,
+        "w": 13,
+        "x": 0,
+        "y": 35
+      },
+      "id": 15,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "rate(candle_i2c_stage_failures_total{job=\"candle-light\"}[$__rate_interval])",
+          "legendFormat": "{{stage}} failures/s",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "editorMode": "code",
+          "expr": "rate(candle_i2c_stage_retries_total{job=\"candle-light\"}[$__rate_interval])",
+          "legendFormat": "{{stage}} retries/s",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "editorMode": "code",
+          "expr": "rate(candle_i2c_stage_success_total{job=\"candle-light\"}[$__rate_interval])",
+          "legendFormat": "{{stage}} success/s",
+          "range": true,
+          "refId": "C"
+        }
+      ],
+      "title": "I2C Stage Rates",
+      "transparent": true,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "efjej6af0v0g0e"
+      },
+      "description": "Sun schedule loaded from /sun_position.json in minutes from midnight.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "mappings": [],
+          "max": 1440,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "m"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 11,
+        "x": 13,
+        "y": 35
+      },
+      "id": 10,
+      "options": {
+        "displayMode": "lcd",
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "maxVizHeight": 300,
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "namePlacement": "left",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "sizing": "auto",
+        "valueMode": "color"
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "candle_sun_sunrise_minutes{job=\"candle-light\"}",
+          "legendFormat": "Sunrise",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "editorMode": "code",
+          "expr": "candle_sun_sunset_minutes{job=\"candle-light\"}",
+          "legendFormat": "Sunset",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "editorMode": "code",
+          "expr": "candle_sun_civil_twilight_begin_minutes{job=\"candle-light\"}",
+          "legendFormat": "Civil Begin",
+          "range": true,
+          "refId": "C"
+        },
+        {
+          "editorMode": "code",
+          "expr": "candle_sun_civil_twilight_end_minutes{job=\"candle-light\"}",
+          "legendFormat": "Civil End",
+          "range": true,
+          "refId": "D"
+        },
+        {
+          "editorMode": "code",
+          "expr": "candle_sun_nautical_twilight_begin_minutes{job=\"candle-light\"}",
+          "legendFormat": "Nautical Begin",
+          "range": true,
+          "refId": "E"
+        },
+        {
+          "editorMode": "code",
+          "expr": "candle_sun_nautical_twilight_end_minutes{job=\"candle-light\"}",
+          "legendFormat": "Nautical End",
+          "range": true,
+          "refId": "F"
+        },
+        {
+          "editorMode": "code",
+          "expr": "candle_sun_astronomical_twilight_begin_minutes{job=\"candle-light\"}",
+          "legendFormat": "Astronomical Begin",
+          "range": true,
+          "refId": "G"
+        },
+        {
+          "editorMode": "code",
+          "expr": "candle_sun_astronomical_twilight_end_minutes{job=\"candle-light\"}",
+          "legendFormat": "Astronomical End",
+          "range": true,
+          "refId": "H"
+        }
+      ],
+      "title": "Sun Schedule",
+      "transparent": true,
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "efjej6af0v0g0e"
+      },
+      "description": "Wi-Fi signal trend.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "max": -30,
+          "min": -100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": -80
+              },
+              {
+                "color": "green",
+                "value": -67
+              }
+            ]
+          },
+          "unit": "dBm"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 11,
+        "x": 13,
+        "y": 44
+      },
+      "id": 7,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "min",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "candle_wifi_rssi_dbm{job=\"candle-light\"}",
+          "legendFormat": "RSSI",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Wi-Fi RSSI",
+      "transparent": true,
+      "type": "timeseries"
     },
     {
       "datasource": {
@@ -1866,7 +2021,7 @@
         "h": 11,
         "w": 24,
         "x": 0,
-        "y": 42
+        "y": 54
       },
       "id": 9,
       "options": {
@@ -1902,6 +2057,7 @@
         }
       ],
       "title": "Sun State",
+      "transparent": true,
       "type": "timeseries"
     }
   ],
@@ -1918,13 +2074,13 @@
     "list": []
   },
   "time": {
-    "from": "now-3h",
+    "from": "now-7d",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "Candle Light",
   "uid": "candle-light",
-  "version": 9,
+  "version": 29,
   "weekStart": ""
 }

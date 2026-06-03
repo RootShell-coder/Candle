@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <DNSServer.h>
 #include <WiFi.h>
+#include <esp_netif.h>
 
 #include "config.h"
 #include "metrics.h"
@@ -26,6 +27,27 @@ const char* wifi_hostname(const Config& cfg) {
   return strlen(cfg.wifi.devname) != 0 ? cfg.wifi.devname : "candle_light";
 }
 
+// Применяет hostname одновременно через Arduino API и напрямую в netif.
+void wifi_apply_hostname(const char* hostname, bool applySta, bool applyAp) {
+  if (hostname == nullptr || hostname[0] == '\0') {
+    return;
+  }
+
+  WiFi.setHostname(hostname);
+
+  if (applySta) {
+    if (esp_netif_t* sta = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF")) {
+      esp_netif_set_hostname(sta, hostname);
+    }
+  }
+
+  if (applyAp) {
+    if (esp_netif_t* ap = esp_netif_get_handle_from_ifkey("WIFI_AP_DEF")) {
+      esp_netif_set_hostname(ap, hostname);
+    }
+  }
+}
+
 // Останавливает captive portal, если он сейчас активен.
 void wifi_stop_captive_portal() {
   if (!s_captivePortalActive) {
@@ -49,7 +71,7 @@ bool wifi_start_captive_portal(const Config& cfg) {
 
   WiFi.disconnect(false, false);
   WiFi.mode(WIFI_AP_STA);
-  WiFi.setHostname(apName);
+  wifi_apply_hostname(apName, true, true);
   WiFi.setAutoReconnect(true);
   WiFi.persistent(false);
 
@@ -84,7 +106,7 @@ void wifi_begin_connection(const Config& cfg) {
   wifi_stop_captive_portal();
 
   WiFi.mode(WIFI_STA);
-  WiFi.setHostname(wifi_hostname(cfg));
+  wifi_apply_hostname(wifi_hostname(cfg), true, false);
   WiFi.setAutoReconnect(true);
   WiFi.persistent(false);
   WiFi.begin(cfg.wifi.ssid, cfg.wifi.password);
