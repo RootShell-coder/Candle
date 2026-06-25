@@ -1,0 +1,54 @@
+:root {
+  --color-bg: #090a0d;
+  --color-bg-glow: rgba(255, 180, 80, 0.16);
+  --color-card: rgba(18, 18, 22, 0.86);
+  --color-panel: rgba(24, 25, 30, 0.92);
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-muted: rgba(255, 255, 255, 0.22);
+  --color-overlay: rgba(0, 0, 0, 0.65);
+  --color-text: #f6efe8;
+  --color-text-muted: #e0d2c2;
+  --color-text-soft: #c6b8aa;
+  --color-accent: #ff9800;
+  --color-accent-light: #ffb766;
+  --color-accent-active: #e65100;
+  --color-danger: #ff5a5a;
+  --cell-size: 26px;
+  --cell-gap: 2px;
+  --preview-cell-size: 16px;
+  --preview-shell-width: 188px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background:
+    radial-gradient(
+      circle at top,
+      var(--color-bg-glow),
+      transparent 0,
+      transparent 42%
+    ),
+    linear-gradient(180deg, #111318 0%, var(--color-bg) 100%);
+  color: var(--color-text);
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+input[type="number"] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}

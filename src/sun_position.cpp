@@ -127,6 +127,21 @@ uint8_t resolve_brightness_for_mode(SunOfflineMode mode) {
   }
 }
 
+bool current_mode_from_elevation(SunOfflineMode& mode) {
+  if (!ntp_has_valid_time()) {
+    return false;
+  }
+
+  const Config& cfg = getConfig();
+  SunOfflinePosition position {};
+  if (!sun_offline_calculate_position_utc(time(nullptr), cfg.location.lat, cfg.location.lng, position)) {
+    return false;
+  }
+
+  mode = sun_offline_mode_from_elevation(position.elevation_deg);
+  return true;
+}
+
 void publish_schedule_metrics(time_t nowUtc) {
   uint32_t updatedAtEpoch = 0;
   if (nowUtc > 0) {
@@ -212,6 +227,55 @@ bool ensure_current_day_schedule(uint16_t& minuteOfDay) {
   return true;
 }
 
+bool current_minute_of_day(uint16_t& minuteOfDay) {
+  char dateKey[11] = "";
+  return build_local_date_key(dateKey, sizeof(dateKey), minuteOfDay);
+}
+
+bool time_schedule_contains_minute(const TimeScheduleConfig& schedule, uint16_t minuteOfDay) {
+  if (schedule.onMinute == schedule.offMinute) {
+    return true;
+  }
+  if (schedule.onMinute < schedule.offMinute) {
+    return minuteOfDay >= schedule.onMinute && minuteOfDay < schedule.offMinute;
+  }
+  return minuteOfDay >= schedule.onMinute || minuteOfDay < schedule.offMinute;
+}
+
+bool time_schedule_should_enable_now(const Config& cfg) {
+  if (!cfg.timeSchedule.enabled || !ntp_has_valid_time()) {
+    return false;
+  }
+
+  uint16_t minuteOfDay = 0;
+  if (!current_minute_of_day(minuteOfDay)) {
+    return false;
+  }
+  return time_schedule_contains_minute(cfg.timeSchedule, minuteOfDay) && cfg.brightness > 0;
+}
+
+void apply_time_schedule_brightness() {
+  const Config cfg = getConfig();
+  const bool shouldEnable = time_schedule_should_enable_now(cfg);
+  const uint8_t targetBrightness = shouldEnable ? cfg.brightness : 0;
+
+  metrics_set_sun_control_mode(false);
+  metrics_set_sun_mode(kSunModeDisabled);
+
+  if (!s_outputKnown ||
+      s_candleEnabled != shouldEnable ||
+      s_lastAppliedBrightness != targetBrightness) {
+    i2c_set_brightness(targetBrightness);
+    s_outputKnown = true;
+    s_candleEnabled = shouldEnable;
+    s_lastAppliedBrightness = targetBrightness;
+
+    Serial.printf("[sun] time schedule brightness=%u\n", static_cast<unsigned>(targetBrightness));
+  }
+
+  metrics_set_sun_state(false, shouldEnable, false, targetBrightness, 0);
+}
+
 void apply_manual_brightness_when_sun_control_disabled() {
   const Config& cfg = getConfig();
   const bool shouldEnable = cfg.candleOn && cfg.brightness > 0;
@@ -248,13 +312,38 @@ void force_off_when_schedule_unavailable() {
   metrics_set_sun_state(false, false, false, 0, 0);
 }
 
+void apply_manual_brightness_when_time_unavailable() {
+  const Config cfg = getConfig();
+  const bool shouldEnable = cfg.candleOn && cfg.brightness > 0;
+  const uint8_t targetBrightness = shouldEnable ? cfg.brightness : 0;
+
+  metrics_set_sun_control_mode(true);
+  metrics_set_sun_mode(kSunModeUnknown);
+
+  if (!s_outputKnown ||
+      s_candleEnabled != shouldEnable ||
+      s_lastAppliedBrightness != targetBrightness) {
+    i2c_set_brightness(targetBrightness);
+    s_outputKnown = true;
+    s_candleEnabled = shouldEnable;
+    s_lastAppliedBrightness = targetBrightness;
+
+    Serial.printf("[sun] waiting for valid time, using manual brightness=%u\n", static_cast<unsigned>(targetBrightness));
+  }
+
+  metrics_set_sun_state(false, shouldEnable, false, targetBrightness, 0);
+}
+
 void apply_candle_state(uint16_t minuteOfDay) {
   if (!s_hasSchedule) {
     force_off_when_schedule_unavailable();
     return;
   }
 
-  const SunOfflineMode mode = sun_offline_mode_from_events(minuteOfDay % kMinutesPerDay, s_events);
+  SunOfflineMode mode = SunOfflineMode::Night;
+  if (!current_mode_from_elevation(mode)) {
+    mode = sun_offline_mode_from_events(minuteOfDay % kMinutesPerDay, s_events);
+  }
   const uint8_t metricMode = metric_mode_from_offline_mode(mode);
   const uint8_t targetBrightness = resolve_brightness_for_mode(mode);
   const bool shouldEnable = targetBrightness > 0;
@@ -285,7 +374,18 @@ void apply_candle_state(uint16_t minuteOfDay) {
 }
 
 void process_sun_logic() {
-  if (!getConfig().location.enabled) {
+  const Config cfg = getConfig();
+  if (!ntp_has_valid_time() && (cfg.location.enabled || cfg.timeSchedule.enabled)) {
+    apply_manual_brightness_when_time_unavailable();
+    return;
+  }
+
+  if (cfg.timeSchedule.enabled) {
+    apply_time_schedule_brightness();
+    return;
+  }
+
+  if (!cfg.location.enabled) {
     apply_manual_brightness_when_sun_control_disabled();
     return;
   }
@@ -293,7 +393,7 @@ void process_sun_logic() {
   metrics_set_sun_control_mode(true);
 
   if (!ntp_has_valid_time()) {
-    force_off_when_schedule_unavailable();
+    apply_manual_brightness_when_time_unavailable();
     return;
   }
 
@@ -328,11 +428,13 @@ void sun_position_init() {
   s_scheduleDate[0] = '\0';
   memset(&s_events, 0, sizeof(s_events));
 
-  metrics_set_sun_control_mode(getConfig().location.enabled);
+  metrics_set_sun_control_mode(getConfig().location.enabled || getConfig().timeSchedule.enabled);
   metrics_set_sun_mode(kSunModeUnknown);
   metrics_set_sun_state(false, false, false, 0, 0);
 
-  if (!getConfig().location.enabled) {
+  if (getConfig().timeSchedule.enabled && ntp_has_valid_time()) {
+    apply_time_schedule_brightness();
+  } else if (!getConfig().location.enabled) {
     apply_manual_brightness_when_sun_control_disabled();
   } else {
     uint16_t minuteOfDay = 0;
@@ -340,7 +442,7 @@ void sun_position_init() {
       apply_candle_state(minuteOfDay);
       Serial.printf("[sun] startup offline schedule applied: mode=%s\n", sun_mode_name_local(s_lastModeMetric));
     } else {
-      force_off_when_schedule_unavailable();
+      apply_manual_brightness_when_time_unavailable();
       Serial.println("[sun] startup offline mode waiting for valid time");
     }
   }
@@ -362,20 +464,30 @@ void sun_position_init() {
 }
 
 bool sun_position_is_candle_enabled() {
-  if (!getConfig().location.enabled) {
-    return getConfig().candleOn && getConfig().brightness > 0;
+  const Config cfg = getConfig();
+  if (cfg.timeSchedule.enabled && ntp_has_valid_time()) {
+    return time_schedule_should_enable_now(cfg);
+  }
+
+  if ((!cfg.location.enabled && !cfg.timeSchedule.enabled) || !ntp_has_valid_time()) {
+    return cfg.candleOn && cfg.brightness > 0;
   }
 
   return s_outputKnown ? s_candleEnabled : false;
 }
 
 bool sun_position_should_enable_now() {
-  if (!getConfig().location.enabled) {
-    return getConfig().candleOn && getConfig().brightness > 0;
+  const Config cfg = getConfig();
+  if (cfg.timeSchedule.enabled) {
+    return time_schedule_should_enable_now(cfg);
+  }
+
+  if (!cfg.location.enabled) {
+    return cfg.candleOn && cfg.brightness > 0;
   }
 
   if (!ntp_has_valid_time()) {
-    return false;
+    return cfg.candleOn && cfg.brightness > 0;
   }
 
   uint16_t minuteOfDay = 0;
@@ -383,17 +495,29 @@ bool sun_position_should_enable_now() {
     return false;
   }
 
-  const SunOfflineMode mode = sun_offline_mode_from_events(minuteOfDay % kMinutesPerDay, s_events);
+  SunOfflineMode mode = SunOfflineMode::Night;
+  if (!current_mode_from_elevation(mode)) {
+    mode = sun_offline_mode_from_events(minuteOfDay % kMinutesPerDay, s_events);
+  }
   return sun_offline_should_enable_candle(mode) && resolve_brightness_for_mode(mode) > 0;
 }
 
+bool sun_position_time_schedule_should_enable_now() {
+  return time_schedule_should_enable_now(getConfig());
+}
+
 const char* sun_position_current_mode_name() {
-  if (!getConfig().location.enabled) {
+  const Config cfg = getConfig();
+  if (cfg.timeSchedule.enabled) {
+    return ntp_has_valid_time() ? "time" : "waiting_time";
+  }
+
+  if (!cfg.location.enabled) {
     return "manual";
   }
 
   if (!ntp_has_valid_time()) {
-    return "unknown";
+    return "waiting_time";
   }
 
   uint16_t minuteOfDay = 0;
@@ -401,12 +525,9 @@ const char* sun_position_current_mode_name() {
     return "unknown";
   }
 
-  const SunOfflineMode mode = sun_offline_mode_from_events(minuteOfDay % kMinutesPerDay, s_events);
-  return sun_offline_mode_name(mode);
-}
-
-void sun_position_handle() {
-  if (!s_initialized) {
-    sun_position_init();
+  SunOfflineMode mode = SunOfflineMode::Night;
+  if (!current_mode_from_elevation(mode)) {
+    mode = sun_offline_mode_from_events(minuteOfDay % kMinutesPerDay, s_events);
   }
+  return sun_offline_mode_name(mode);
 }

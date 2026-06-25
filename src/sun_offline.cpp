@@ -211,7 +211,6 @@ bool sun_offline_calculate_events_local_day(
 
   memset(&out, 0, sizeof(out));
 
-  // Берем солнечные параметры вблизи локального полудня для стабильного суточного расписания.
   const int64_t day_index = days_from_civil(year, static_cast<unsigned>(month), static_cast<unsigned>(day));
   const double utc_noon_minutes = 12.0 * 60.0 - static_cast<double>(tz_offset_minutes);
   const double jd_noon =

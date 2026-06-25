@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+#include <sys/time.h>
 #include <time.h>
 
 #include "config.h"
@@ -19,6 +20,7 @@ constexpr uint32_t kNtpSyncTimeoutMs = 60000UL;
 constexpr uint32_t kNtpRetryBaseMs = 15000UL;
 constexpr uint32_t kNtpRetryMaxMs = 15UL * 60UL * 1000UL;
 constexpr time_t kValidEpochThreshold = static_cast<time_t>(1704067200ULL);
+constexpr const char* kDefaultNtpServer = "pool.ntp.org";
 
 bool s_initialized = false;
 bool s_syncInProgress = false;
@@ -28,18 +30,47 @@ uint8_t s_failureStreak = 0;
 uint32_t s_nextSyncAtMs = 0;
 uint32_t s_syncDeadlineMs = 0;
 time_t s_lastRequestedEpoch = 0;
+uint32_t s_lastSuccessEpoch = 0;
 char s_lastServer[64] = "";
+char s_lastServer2[64] = "";
+char s_lastServerIp[46] = "";
+char s_lastServer2Ip[46] = "";
 char s_lastTimezone[32] = "";
 char s_posixTimezone[32] = "UTC0";
+bool s_lastDnsResolved = false;
 
-// Проверяет, что полученное Unix-время уже похоже на реальное,
-// а не осталось в стартовом/нулевом состоянии после загрузки устройства.
 bool ntp_time_is_valid(time_t value) {
   return value >= kValidEpochThreshold;
 }
 
-// Вычисляет задержку до следующей попытки синхронизации,
-// постепенно увеличивая интервал после последовательных ошибок.
+bool ntp_has_sta_ip() {
+  return WiFi.localIP() != IPAddress(0, 0, 0, 0);
+}
+
+bool ntp_resolve_server(const char* hostname, char* resolved, size_t resolvedSize) {
+  if (resolved == nullptr || resolvedSize == 0) {
+    return false;
+  }
+
+  resolved[0] = '\0';
+  if (hostname == nullptr || hostname[0] == '\0') {
+    return false;
+  }
+
+  IPAddress ip;
+  if (!WiFi.hostByName(hostname, ip)) {
+    return false;
+  }
+
+  const String ipText = ip.toString();
+  if (ipText.length() == 0 || ipText == "0.0.0.0") {
+    return false;
+  }
+
+  strlcpy(resolved, ipText.c_str(), resolvedSize);
+  return true;
+}
+
 uint32_t ntp_retry_delay_ms() {
   uint32_t delayMs = kNtpRetryBaseMs;
 
@@ -54,8 +85,6 @@ uint32_t ntp_retry_delay_ms() {
   return delayMs;
 }
 
-// Пытается разобрать таймзону, заданную как числовое смещение часов
-// относительно UTC, например `+3`, `-5` или `UTC+2`.
 bool ntp_parse_timezone_hours(const char* raw, long& hours) {
   if (raw == nullptr) {
     return false;
@@ -82,8 +111,6 @@ bool ntp_parse_timezone_hours(const char* raw, long& hours) {
   return end != raw && *end == '\0' && hours >= -12 && hours <= 14;
 }
 
-// Преобразует значение таймзоны из конфигурации в POSIX-строку,
-// которую понимают `configTzTime()` и стандартные функции времени ESP32.
 const char* ntp_resolve_timezone(const char* raw) {
   if (raw == nullptr || *raw == '\0') {
     strlcpy(s_posixTimezone, "UTC0", sizeof(s_posixTimezone));
@@ -121,10 +148,16 @@ const char* ntp_resolve_timezone(const char* raw) {
   return s_posixTimezone;
 }
 
-// Callback от SNTP, который вызывается после успешной синхронизации времени.
-// Здесь обновляются метрики, сбрасываются ошибки и планируется следующий sync.
 void ntp_on_time_sync(struct timeval* tv) {
   const time_t syncedEpoch = tv != nullptr ? tv->tv_sec : time(nullptr);
+  if (!s_syncInProgress && ntp_time_is_valid(s_lastSuccessEpoch)) {
+    const int64_t secondsSinceLastSuccess =
+        static_cast<int64_t>(syncedEpoch) - static_cast<int64_t>(s_lastSuccessEpoch);
+    if (secondsSinceLastSuccess >= -2 && secondsSinceLastSuccess <= 2) {
+      return;
+    }
+  }
+
   int32_t driftSeconds = 0;
 
   if (ntp_time_is_valid(s_lastRequestedEpoch) && ntp_time_is_valid(syncedEpoch)) {
@@ -143,6 +176,7 @@ void ntp_on_time_sync(struct timeval* tv) {
   s_syncDeadlineMs = 0;
   s_failureStreak = 0;
   s_nextSyncAtMs = millis() + kNtpSyncIntervalMs;
+  s_lastSuccessEpoch = static_cast<uint32_t>(syncedEpoch);
 
   Serial.printf(
       "[ntp] synchronized via '%s', epoch=%lld, drift=%ld s\n",
@@ -151,16 +185,14 @@ void ntp_on_time_sync(struct timeval* tv) {
       static_cast<long>(driftSeconds));
 }
 
-// Проверяет, изменились ли NTP-сервер или таймзона в текущей конфигурации,
-// чтобы при необходимости немедленно перезапросить синхронизацию.
 bool ntp_config_changed(const Config& cfg) {
-  const char* ntpServer = strlen(cfg.ntp.ntp_server) != 0 ? cfg.ntp.ntp_server : "pool.ntp.org";
+  const char* ntpServer = strlen(cfg.ntp.ntp_server) != 0 ? cfg.ntp.ntp_server : kDefaultNtpServer;
+  const char* ntpServer2 = strlen(cfg.ntp.ntp_server2) != 0 ? cfg.ntp.ntp_server2 : "";
   return strcmp(s_lastServer, ntpServer) != 0 ||
+         strcmp(s_lastServer2, ntpServer2) != 0 ||
          strcmp(s_lastTimezone, cfg.ntp.ntp_timezone) != 0;
 }
 
-// Запускает новую попытку синхронизации через сервер из конфигурации,
-// подготавливая SNTP, дедлайн ожидания и диагностические поля состояния.
 void ntp_request_sync(const Config& cfg) {
   if (!s_initialized) {
     sntp_setoperatingmode(SNTP_OPMODE_POLL);
@@ -169,7 +201,7 @@ void ntp_request_sync(const Config& cfg) {
     s_initialized = true;
   }
 
-  const char* ntpServer = strlen(cfg.ntp.ntp_server) != 0 ? cfg.ntp.ntp_server : "pool.ntp.org";
+  const char* ntpServer = strlen(cfg.ntp.ntp_server) != 0 ? cfg.ntp.ntp_server : kDefaultNtpServer;
   const char* posixTimezone = ntp_resolve_timezone(cfg.ntp.ntp_timezone);
 
   s_lastRequestedEpoch = time(nullptr);
@@ -180,20 +212,53 @@ void ntp_request_sync(const Config& cfg) {
   s_syncDeadlineMs = nowMs + kNtpSyncTimeoutMs;
 
   strlcpy(s_lastServer, ntpServer, sizeof(s_lastServer));
+  strlcpy(s_lastServer2, cfg.ntp.ntp_server2, sizeof(s_lastServer2));
   strlcpy(s_lastTimezone, cfg.ntp.ntp_timezone, sizeof(s_lastTimezone));
 
-  configTzTime(posixTimezone, ntpServer);
+  const char* ntpServer2 = strlen(cfg.ntp.ntp_server2) != 0 ? cfg.ntp.ntp_server2 : nullptr;
+  const bool primaryDnsOk = ntp_resolve_server(ntpServer, s_lastServerIp, sizeof(s_lastServerIp));
+  bool secondaryDnsOk = true;
+  s_lastServer2Ip[0] = '\0';
+  if (ntpServer2 != nullptr) {
+    secondaryDnsOk = ntp_resolve_server(ntpServer2, s_lastServer2Ip, sizeof(s_lastServer2Ip));
+  }
+  s_lastDnsResolved = primaryDnsOk;
+
+  if (!primaryDnsOk) {
+    metrics_record_ntp_failure();
+    s_syncInProgress = false;
+    s_syncDeadlineMs = 0;
+    if (s_failureStreak < UINT8_MAX) {
+      ++s_failureStreak;
+    }
+    const uint32_t retryDelayMs = ntp_retry_delay_ms();
+    s_nextSyncAtMs = nowMs + retryDelayMs;
+    Serial.printf("[ntp] DNS resolve failed for '%s', retry in %lu ms (streak=%u)\n",
+                  ntpServer,
+                  static_cast<unsigned long>(retryDelayMs),
+                  static_cast<unsigned>(s_failureStreak));
+    return;
+  }
+
+  if (ntpServer2 != nullptr && !secondaryDnsOk) {
+    Serial.printf("[ntp] DNS resolve failed for secondary server '%s', using primary only\n", ntpServer2);
+  }
+
+  configTzTime(
+      posixTimezone,
+      s_lastServerIp,
+      ntpServer2 != nullptr && secondaryDnsOk ? s_lastServer2Ip : nullptr);
+  sntp_set_time_sync_notification_cb(ntp_on_time_sync);
 
   Serial.printf(
-      "[ntp] sync requested, server='%s', timezone='%s' -> '%s'\n",
+      "[ntp] sync requested, server='%s' (%s), timezone='%s' -> '%s'\n",
       ntpServer,
+      s_lastServerIp,
       cfg.ntp.ntp_timezone,
       posixTimezone);
 }
 } // namespace
 
-// Сбрасывает внутреннее состояние NTP-модуля при старте устройства
-// или перед запуском сетевой FreeRTOS-задачи.
 void ntp_init() {
   s_initialized = false;
   s_syncInProgress = false;
@@ -203,13 +268,14 @@ void ntp_init() {
   s_nextSyncAtMs = 0;
   s_syncDeadlineMs = 0;
   s_lastRequestedEpoch = 0;
+  s_lastSuccessEpoch = 0;
   s_lastServer[0] = '\0';
+  s_lastServer2[0] = '\0';
+  s_lastServerIp[0] = '\0';
+  s_lastServer2Ip[0] = '\0';
   s_lastTimezone[0] = '\0';
+  s_lastDnsResolved = false;
 
-  // Применяем таймзону из конфига немедленно, чтобы localtime_r() и
-  // ntp_utc_offset_minutes() работали корректно ещё до первой NTP-синхронизации.
-  // Критично для расчёта расписания рассвета/заката при старте, когда RTC
-  // содержит валидное время, но WiFi ещё не подключён.
   const char* posixTz = ntp_resolve_timezone(getConfig().ntp.ntp_timezone);
   setenv("TZ", posixTz, 1);
   tzset();
@@ -217,18 +283,20 @@ void ntp_init() {
                 getConfig().ntp.ntp_timezone, posixTz);
 }
 
-// Основной обработчик NTP-модуля: отслеживает состояние Wi‑Fi,
-// контролирует таймауты и решает, когда нужно запустить очередной sync.
 void ntp_handle() {
   const bool wifiConnected = WiFi.status() == WL_CONNECTED;
+  const bool hasIp = wifiConnected && ntp_has_sta_ip();
 
   if (s_syncInProgress) {
     const uint32_t nowMs = millis();
-    if (!wifiConnected) {
+    const sntp_sync_status_t syncStatus = sntp_get_sync_status();
+    if (syncStatus == SNTP_SYNC_STATUS_COMPLETED) {
+      ntp_on_time_sync(nullptr);
+    } else if (!wifiConnected || !hasIp) {
       s_syncInProgress = false;
       s_syncDeadlineMs = 0;
       s_nextSyncAtMs = 0;
-      Serial.println("[ntp] Wi-Fi lost during sync, will retry after reconnect");
+      Serial.println("[ntp] Wi-Fi/IP lost during sync, will retry after reconnect");
     } else if (static_cast<int32_t>(nowMs - s_syncDeadlineMs) >= 0) {
       metrics_record_ntp_failure();
       s_syncInProgress = false;
@@ -244,7 +312,7 @@ void ntp_handle() {
     }
   }
 
-  if (!wifiConnected) {
+  if (!wifiConnected || !hasIp) {
     s_lastWifiConnected = false;
     return;
   }
@@ -275,26 +343,74 @@ void ntp_handle() {
   }
 }
 
-// Возвращает признак того, что текущее системное время уже прошло
-// базовую проверку на валидность и может использоваться приложением.
 bool ntp_has_valid_time() {
   return ntp_time_is_valid(time(nullptr));
 }
 
-// Возвращает смещение локального времени от UTC в минутах для текущего момента.
-// Использует TZ env-переменную, выставленную NTP-модулем из конфига.
-// Учитывает DST: значение корректно для текущего момента (летнее/зимнее время).
+NtpStatus ntp_status() {
+  const uint32_t nowMs = millis();
+  NtpStatus status {};
+  status.wifiConnected = WiFi.status() == WL_CONNECTED;
+  status.hasIp = status.wifiConnected && ntp_has_sta_ip();
+  status.syncInProgress = s_syncInProgress;
+  status.validTime = ntp_has_valid_time();
+  status.ntpSynchronized = ntp_is_synchronized();
+  status.bootSyncPending = s_bootSyncPending;
+  status.dnsResolved = s_lastDnsResolved;
+  status.failureStreak = s_failureStreak;
+  status.sntpSyncStatus = static_cast<uint8_t>(sntp_get_sync_status());
+  status.lastSuccessEpoch = s_lastSuccessEpoch;
+
+  if (s_nextSyncAtMs != 0 && static_cast<int32_t>(s_nextSyncAtMs - nowMs) > 0) {
+    status.nextSyncInMs = s_nextSyncAtMs - nowMs;
+  }
+
+  if (s_syncInProgress && s_syncDeadlineMs != 0 && static_cast<int32_t>(s_syncDeadlineMs - nowMs) > 0) {
+    status.syncTimeoutInMs = s_syncDeadlineMs - nowMs;
+  }
+
+  strlcpy(status.server, s_lastServer[0] != '\0' ? s_lastServer : kDefaultNtpServer, sizeof(status.server));
+  strlcpy(status.serverIp, s_lastServerIp, sizeof(status.serverIp));
+  strlcpy(status.timezone, s_lastTimezone[0] != '\0' ? s_lastTimezone : getConfig().ntp.ntp_timezone, sizeof(status.timezone));
+  return status;
+}
+
 int ntp_utc_offset_minutes() {
   const time_t now = time(nullptr);
   struct tm utcTm {};
   if (gmtime_r(&now, &utcTm) == nullptr) {
     return 0;
   }
-  // mktime интерпретирует структуру как local-время и возвращает UTC-эпоху.
-  // Разница между исходным UTC и «переинтерпретированным» равна смещению TZ.
   const time_t interpretedAsLocal = mktime(&utcTm);
   if (interpretedAsLocal == static_cast<time_t>(-1)) {
     return 0;
   }
   return static_cast<int>(difftime(now, interpretedAsLocal) / 60.0);
+}
+
+bool ntp_is_synchronized() {
+  return ntp_time_is_valid(static_cast<time_t>(s_lastSuccessEpoch));
+}
+
+bool ntp_set_manual_time(uint32_t epochUtc) {
+  if (ntp_is_synchronized()) {
+    return false;
+  }
+
+  if (!ntp_time_is_valid(static_cast<time_t>(epochUtc))) {
+    return false;
+  }
+
+  struct timeval tv {};
+  tv.tv_sec = static_cast<time_t>(epochUtc);
+  tv.tv_usec = 0;
+  if (settimeofday(&tv, nullptr) != 0) {
+    return false;
+  }
+
+  s_syncInProgress = false;
+  s_syncDeadlineMs = 0;
+  s_bootSyncPending = false;
+  Serial.printf("[ntp] manual time set, epoch=%lu\n", static_cast<unsigned long>(epochUtc));
+  return true;
 }

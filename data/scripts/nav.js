@@ -1,0 +1,3 @@
+(function () {
+  window.Candle?.refreshTimedNavigation?.();
+}());

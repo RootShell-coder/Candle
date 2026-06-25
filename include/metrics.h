@@ -19,6 +19,9 @@ void metrics_record_wifi_disconnect();
 
 void metrics_record_http_request();
 void metrics_record_prometheus_scrape();
+void metrics_set_ota_active(bool active);
+void metrics_record_ota_success();
+void metrics_record_ota_failure();
 
 void metrics_record_ntp_sync(int32_t driftSeconds, uint32_t syncedAtEpoch);
 void metrics_record_ntp_failure();

@@ -1,14 +1,53 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <LittleFS.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/semphr.h>
 #include <stdlib.h>
 
 #include "config.h"
+#include "wifi_module.h"
 
 static Config currentConfig;
+static SemaphoreHandle_t s_configMutex = nullptr;
+static SemaphoreHandle_t s_configFileMutex = nullptr;
+
+namespace {
+constexpr const char* kConfigTmpPath = "/settings.tmp";
+constexpr const char* kConfigBackupPath = "/settings.bak";
+
+SemaphoreHandle_t configMutex() {
+  if (s_configMutex == nullptr) {
+    s_configMutex = xSemaphoreCreateMutex();
+  }
+  return s_configMutex;
+}
+
+SemaphoreHandle_t configFileMutex() {
+  if (s_configFileMutex == nullptr) {
+    s_configFileMutex = xSemaphoreCreateMutex();
+  }
+  return s_configFileMutex;
+}
+
+struct ScopedSemaphoreLock {
+  SemaphoreHandle_t mutex;
+  bool locked;
+
+  ScopedSemaphoreLock(SemaphoreHandle_t target, TickType_t timeout)
+      : mutex(target),
+        locked(target != nullptr && xSemaphoreTake(target, timeout) == pdTRUE) {
+  }
+
+  ~ScopedSemaphoreLock() {
+    if (locked && mutex != nullptr) {
+      xSemaphoreGive(mutex);
+    }
+  }
+};
+}  // namespace
 
 template <size_t N>
-// Копирует строку из JSON в буфер конфигурации с запасным значением.
 void copyConfigString(char (&dest)[N], JsonVariantConst value, const char* fallback) {
   const char* src = fallback != nullptr ? fallback : "";
 
@@ -22,23 +61,55 @@ void copyConfigString(char (&dest)[N], JsonVariantConst value, const char* fallb
   strlcpy(dest, src, N);
 }
 
+template <size_t N>
+void sanitizeConfigString(char (&value)[N], const char* fallback) {
+  char sanitized[N] {};
+  size_t out = 0;
+
+  for (size_t in = 0; in < N && value[in] != '\0' && out + 1 < N; ++in) {
+    const unsigned char c = static_cast<unsigned char>(value[in]);
+    if (c >= 0x20 && c <= 0x7E) {
+      sanitized[out++] = static_cast<char>(c);
+    }
+  }
+
+  if (out == 0 && fallback != nullptr) {
+    strlcpy(value, fallback, N);
+    return;
+  }
+
+  sanitized[out] = '\0';
+  strlcpy(value, sanitized, N);
+}
+
+void sanitizeConfigStrings(Config& cfg) {
+  sanitizeConfigString(cfg.devname, "candle-light");
+  sanitizeConfigString(cfg.name, "Candle Light");
+  sanitizeConfigString(cfg.ntp.ntp_server, "pool.ntp.org");
+  sanitizeConfigString(cfg.ntp.ntp_server2, "");
+  sanitizeConfigString(cfg.ntp.ntp_timezone, "UTC0");
+}
+
 template <typename T>
-// Ограничивает значение конфигурации заданным диапазоном.
 T clampConfigValue(T value, T minValue, T maxValue) {
   return value < minValue ? minValue : (value > maxValue ? maxValue : value);
 }
 
-// Проверяет корректность широты для модуля расписания солнца.
 bool isValidLatitude(double value) {
   return value >= -90.0 && value <= 90.0;
 }
 
-// Проверяет корректность долготы для модуля расписания солнца.
 bool isValidLongitude(double value) {
   return value >= -180.0 && value <= 180.0;
 }
 
-// Извлекает координату из JSON, принимая и строку с точкой/запятой, и число.
+uint16_t normalizeMinuteOfDay(int value, uint16_t fallback) {
+  if (value < 0 || value >= 24 * 60) {
+    return fallback;
+  }
+  return static_cast<uint16_t>(value);
+}
+
 bool parseCoordinateValue(JsonVariantConst value, double& result) {
   if (value.is<float>() || value.is<double>() ||
       value.is<int>() || value.is<long>() ||
@@ -69,69 +140,39 @@ bool parseCoordinateValue(JsonVariantConst value, double& result) {
   return true;
 }
 
-// Заполняет сетевые параметры безопасными значениями по умолчанию.
-static void setDefaultWiFiConfig(WiFiConfig& wifi) {
-  strlcpy(wifi.devname, "candle_light", sizeof(wifi.devname));
-  strlcpy(wifi.name, "Candle Light", sizeof(wifi.name));
-  strlcpy(wifi.ssid, "", sizeof(wifi.ssid));
-  strlcpy(wifi.password, "", sizeof(wifi.password));
-  wifi.power = 0;
-  strlcpy(wifi.phy_mode, "11n", sizeof(wifi.phy_mode));
-}
-
-// Восстанавливает полный набор заводских настроек приложения.
 static void setDefaultConfig() {
   memset(&currentConfig, 0, sizeof(currentConfig));
-  setDefaultWiFiConfig(currentConfig.wifi);
 
-  currentConfig.ota.port = 3232;
-  strlcpy(currentConfig.ota.hostname, currentConfig.wifi.devname, sizeof(currentConfig.ota.hostname));
-
+  strlcpy(currentConfig.devname, "candle-light", sizeof(currentConfig.devname));
+  strlcpy(currentConfig.name, "Candle Light", sizeof(currentConfig.name));
   strlcpy(currentConfig.ntp.ntp_server, "pool.ntp.org", sizeof(currentConfig.ntp.ntp_server));
+  currentConfig.ntp.ntp_server2[0] = '\0';
   strlcpy(currentConfig.ntp.ntp_timezone, "Europe/London", sizeof(currentConfig.ntp.ntp_timezone));
 
   currentConfig.location.enabled = true;
-  currentConfig.location.lat = 55.29592;
-  currentConfig.location.lng = 35.58514;
+  currentConfig.location.lat = 51.5287398;
+  currentConfig.location.lng = -0.2664056;
+  currentConfig.moonLed.enabled = false;
+  currentConfig.moonLed.maxBrightness = 25;
+  currentConfig.moonLed.hue = 42;
+  currentConfig.timeSchedule.enabled = false;
+  currentConfig.timeSchedule.onMinute = 18U * 60U;
+  currentConfig.timeSchedule.offMinute = 23U * 60U;
   currentConfig.brightness = 16;
   currentConfig.candleOn = true;
 }
 
-// Очищает Wi‑Fi-учётные данные перед повторной настройкой устройства.
-void configResetToDefault() {
-  currentConfig.wifi.ssid[0] = '\0';
-  currentConfig.wifi.password[0] = '\0';
-}
-
-// Возвращает текущую конфигурацию только для чтения.
-const Config& getConfig() {
-  return currentConfig;
-}
-
-// Возвращает изменяемую конфигурацию для внутренних модулей.
-Config& getMutableConfig() {
-  return currentConfig;
-}
-
-// Обновляет яркость в процентах 0..100 и синхронизирует флаг включения свечи.
-bool configSetBrightness(uint8_t brightness) {
-  brightness = brightness > 100 ? 100 : brightness;
-
-  if (currentConfig.brightness == brightness) {
-    if (brightness == 0) {
-      currentConfig.candleOn = false;
-    }
-    return true;
+Config getConfig() {
+  Config snapshot {};
+  ScopedSemaphoreLock lock(configMutex(), portMAX_DELAY);
+  if (!lock.locked) {
+    Serial.println("[config] Failed to lock config for reading");
+    return snapshot;
   }
-
-  currentConfig.brightness = brightness;
-  if (brightness == 0) {
-    currentConfig.candleOn = false;
-  }
-  return configSave();
+  snapshot = currentConfig;
+  return snapshot;
 }
 
-// Инициализирует LittleFS и при необходимости форматирует раздел.
 static bool initLittleFS() {
   // basePath = "/littlefs", partitionLabel = "littlefs".
   if (LittleFS.begin(true, "/littlefs", 10, "littlefs")) {
@@ -152,45 +193,124 @@ static bool initLittleFS() {
   return true;
 }
 
-// Сохраняет текущую конфигурацию в JSON-файл.
-bool configSave() {
+static void populateConfigJson(JsonObject root, const Config& cfg) {
+  root["devname"] = cfg.devname;
+  root["name"] = cfg.name;
+
+  JsonObject ntp = root["ntp"].to<JsonObject>();
+  ntp["ntp_server"] = cfg.ntp.ntp_server;
+  ntp["ntp_server2"] = cfg.ntp.ntp_server2;
+  ntp["ntp_timezone"] = cfg.ntp.ntp_timezone;
+
+  JsonObject location = root["location"].to<JsonObject>();
+  location["enabled"] = cfg.location.enabled;
+  location["lat"] = cfg.location.lat;
+  location["lng"] = cfg.location.lng;
+
+  JsonObject moonLed = root["moonLed"].to<JsonObject>();
+  moonLed["enabled"] = cfg.moonLed.enabled;
+  moonLed["maxBrightness"] = cfg.moonLed.maxBrightness;
+  moonLed["hue"] = cfg.moonLed.hue;
+
+  JsonObject timeSchedule = root["timeSchedule"].to<JsonObject>();
+  timeSchedule["enabled"] = cfg.timeSchedule.enabled;
+  timeSchedule["onMinute"] = cfg.timeSchedule.onMinute;
+  timeSchedule["offMinute"] = cfg.timeSchedule.offMinute;
+
+  root["brightness"] = cfg.brightness;
+  root["candleOn"] = cfg.candleOn;
+}
+
+static void applyNtpConfigJson(Config& cfg, JsonObjectConst ntp) {
+  copyConfigString(cfg.ntp.ntp_server, ntp["ntp_server"], cfg.ntp.ntp_server);
+  copyConfigString(cfg.ntp.ntp_server2, ntp["ntp_server2"], cfg.ntp.ntp_server2);
+  if (ntp["ntp_timezone"].is<const char*>()) {
+    copyConfigString(cfg.ntp.ntp_timezone, ntp["ntp_timezone"], cfg.ntp.ntp_timezone);
+  } else if (!ntp["ntp_timezone"].isNull()) {
+    snprintf(cfg.ntp.ntp_timezone, sizeof(cfg.ntp.ntp_timezone), "%ld", ntp["ntp_timezone"] | 0L);
+  }
+}
+
+static void applyLocationConfigJson(Config& cfg, JsonObjectConst location) {
+  cfg.location.enabled = location["enabled"] | cfg.location.enabled;
+
+  double lat = cfg.location.lat;
+  if (parseCoordinateValue(location["lat"], lat)) {
+    if (isValidLatitude(lat)) {
+      cfg.location.lat = lat;
+    } else {
+      Serial.printf("[config] ignoring invalid latitude: %.6f\n", lat);
+    }
+  }
+
+  double lng = cfg.location.lng;
+  if (parseCoordinateValue(location["lng"], lng)) {
+    if (isValidLongitude(lng)) {
+      cfg.location.lng = lng;
+    } else {
+      Serial.printf("[config] ignoring invalid longitude: %.6f\n", lng);
+    }
+  }
+}
+
+static void applyMoonLedConfigJson(Config& cfg, JsonObjectConst moonLed) {
+  cfg.moonLed.enabled = moonLed["enabled"] | cfg.moonLed.enabled;
+  cfg.moonLed.maxBrightness = static_cast<uint8_t>(clampConfigValue<int>(
+      moonLed["maxBrightness"] | static_cast<int>(cfg.moonLed.maxBrightness), 0, 100));
+  cfg.moonLed.hue = static_cast<uint16_t>(clampConfigValue<int>(
+      moonLed["hue"] | static_cast<int>(cfg.moonLed.hue), 0, 360));
+}
+
+static void applyTimeScheduleConfigJson(Config& cfg, JsonObjectConst timeSchedule) {
+  cfg.timeSchedule.enabled = timeSchedule["enabled"] | cfg.timeSchedule.enabled;
+  cfg.timeSchedule.onMinute = normalizeMinuteOfDay(
+      timeSchedule["onMinute"] | static_cast<int>(cfg.timeSchedule.onMinute),
+      cfg.timeSchedule.onMinute);
+  cfg.timeSchedule.offMinute = normalizeMinuteOfDay(
+      timeSchedule["offMinute"] | static_cast<int>(cfg.timeSchedule.offMinute),
+      cfg.timeSchedule.offMinute);
+}
+
+static void applyOutputConfigJson(Config& cfg, JsonDocument& doc) {
+  int storedBrightness = clampConfigValue<int>(
+      doc["brightness"] | static_cast<int>(cfg.brightness), 0, 255);
+  if (storedBrightness > 100) {
+    storedBrightness = (storedBrightness * 100 + 127) / 255;
+  }
+  cfg.brightness = static_cast<uint8_t>(clampConfigValue<int>(storedBrightness, 0, 100));
+  cfg.candleOn = doc["candleOn"] | (cfg.brightness > 0);
+
+  if (cfg.brightness == 0) {
+    cfg.candleOn = false;
+  }
+}
+
+static bool writeConfigToFile(const Config& cfg) {
+  Config sanitizedConfig = cfg;
+  sanitizeConfigStrings(sanitizedConfig);
+
+  ScopedSemaphoreLock fileLock(configFileMutex(), pdMS_TO_TICKS(10000));
+  if (!fileLock.locked) {
+    Serial.println("[config] Failed to lock config file for writing");
+    return false;
+  }
+
   if (!initLittleFS()) {
     Serial.println("[config] LittleFS init failed in save");
     return false;
   }
 
-  File file = LittleFS.open(CONFIG_JSON_PATH, "w");
+  LittleFS.remove(kConfigTmpPath);
+
+  File file = LittleFS.open(kConfigTmpPath, "w");
   if (!file) {
-    Serial.println("[config] Failed to open config file for writing");
+    Serial.println("[config] Failed to open temp config file for writing");
     return false;
   }
 
   JsonDocument doc;
   JsonObject root = doc.to<JsonObject>();
-
-  JsonObject wifi = root["wifi"].to<JsonObject>();
-  wifi["devname"] = currentConfig.wifi.devname;
-  wifi["name"] = currentConfig.wifi.name;
-  wifi["ssid"] = currentConfig.wifi.ssid;
-  wifi["password"] = currentConfig.wifi.password;
-  wifi["power"] = currentConfig.wifi.power;
-  wifi["phy_mode"] = currentConfig.wifi.phy_mode;
-
-  JsonObject ota = root["OTA"].to<JsonObject>();
-  ota["port"] = currentConfig.ota.port;
-  ota["hostname"] = currentConfig.ota.hostname;
-
-  JsonObject ntp = root["ntp"].to<JsonObject>();
-  ntp["ntp_server"] = currentConfig.ntp.ntp_server;
-  ntp["ntp_timezone"] = currentConfig.ntp.ntp_timezone;
-
-  JsonObject location = root["location"].to<JsonObject>();
-  location["enabled"] = currentConfig.location.enabled;
-  location["lat"] = currentConfig.location.lat;
-  location["lng"] = currentConfig.location.lng;
-
-  root["brightness"] = currentConfig.brightness;
-  root["candleOn"] = currentConfig.candleOn;
+  populateConfigJson(root, sanitizedConfig);
 
   if (serializeJsonPretty(doc, file) == 0) {
     Serial.println("[config] Failed to serialize config");
@@ -199,10 +319,67 @@ bool configSave() {
   }
 
   file.close();
+
+  File verifyFile = LittleFS.open(kConfigTmpPath, "r");
+  if (!verifyFile) {
+    Serial.println("[config] Failed to reopen temp config for verification");
+    LittleFS.remove(kConfigTmpPath);
+    return false;
+  }
+
+  JsonDocument verifyDoc;
+  const DeserializationError verifyError = deserializeJson(verifyDoc, verifyFile);
+  verifyFile.close();
+  if (verifyError) {
+    Serial.printf("[config] temp config verification failed: %s\n", verifyError.c_str());
+    LittleFS.remove(kConfigTmpPath);
+    return false;
+  }
+
+  LittleFS.remove(kConfigBackupPath);
+  const bool hadConfig = LittleFS.exists(CONFIG_JSON_PATH);
+  if (hadConfig && !LittleFS.rename(CONFIG_JSON_PATH, kConfigBackupPath)) {
+    Serial.println("[config] Failed to move current config to backup");
+    LittleFS.remove(kConfigTmpPath);
+    return false;
+  }
+
+  if (!LittleFS.rename(kConfigTmpPath, CONFIG_JSON_PATH)) {
+    Serial.println("[config] Failed to promote temp config");
+    LittleFS.remove(CONFIG_JSON_PATH);
+    if (hadConfig) {
+      LittleFS.rename(kConfigBackupPath, CONFIG_JSON_PATH);
+    }
+    LittleFS.remove(kConfigTmpPath);
+    return false;
+  }
+
+  LittleFS.remove(kConfigBackupPath);
   return true;
 }
 
-// Загружает настройки из LittleFS и нормализует значения по диапазонам.
+bool configSave() {
+  return writeConfigToFile(getConfig());
+}
+
+bool configUpdate(const Config& config, bool saveToFile) {
+  Config sanitizedConfig = config;
+  sanitizeConfigStrings(sanitizedConfig);
+
+  if (saveToFile && !writeConfigToFile(sanitizedConfig)) {
+    return false;
+  }
+
+  ScopedSemaphoreLock lock(configMutex(), pdMS_TO_TICKS(1000));
+  if (!lock.locked) {
+    Serial.println("[config] Failed to lock config for update");
+    return false;
+  }
+
+  currentConfig = sanitizedConfig;
+  return true;
+}
+
 bool configLoad() {
   setDefaultConfig();
 
@@ -243,66 +420,33 @@ bool configLoad() {
     return configSave();
   }
 
-  const JsonObject wifi = doc["wifi"].as<JsonObject>();
-  const JsonObject ota = doc["OTA"].as<JsonObject>();
-  const JsonObject ntp = doc["ntp"].as<JsonObject>();
-  const JsonObject location = doc["location"].as<JsonObject>();
-
-  copyConfigString(currentConfig.wifi.devname, wifi["devname"], currentConfig.wifi.devname);
-  copyConfigString(currentConfig.wifi.name, wifi["name"], currentConfig.wifi.name);
-  copyConfigString(currentConfig.wifi.ssid, wifi["ssid"], currentConfig.wifi.ssid);
-  copyConfigString(currentConfig.wifi.password, wifi["password"], currentConfig.wifi.password);
-  currentConfig.wifi.power = clampConfigValue<int>(wifi["power"] | currentConfig.wifi.power, 0, 84);
-  copyConfigString(currentConfig.wifi.phy_mode, wifi["phy_mode"], currentConfig.wifi.phy_mode);
-
-  currentConfig.ota.port = clampConfigValue<int>(ota["port"] | currentConfig.ota.port, 0, 65535);
-  copyConfigString(currentConfig.ota.hostname, ota["hostname"], currentConfig.wifi.devname);
-
-  copyConfigString(currentConfig.ntp.ntp_server, ntp["ntp_server"], currentConfig.ntp.ntp_server);
-  if (ntp["ntp_timezone"].is<const char*>()) {
-    copyConfigString(currentConfig.ntp.ntp_timezone, ntp["ntp_timezone"], currentConfig.ntp.ntp_timezone);
-  } else if (!ntp["ntp_timezone"].isNull()) {
-    snprintf(
-        currentConfig.ntp.ntp_timezone,
-        sizeof(currentConfig.ntp.ntp_timezone),
-        "%ld",
-        ntp["ntp_timezone"] | 0L);
-  }
-
-  currentConfig.location.enabled = location["enabled"] | currentConfig.location.enabled;
-
-  double lat = currentConfig.location.lat;
-  if (parseCoordinateValue(location["lat"], lat)) {
-    if (isValidLatitude(lat)) {
-      currentConfig.location.lat = lat;
-    } else {
-      Serial.printf("[config] ignoring invalid latitude: %.6f\n", lat);
+  const bool hasLegacyWiFiConfig = !doc["wifi"].isNull();
+  const bool needsConfigMigration = hasLegacyWiFiConfig ||
+      doc["moonLed"].isNull() ||
+      doc["moonLed"]["enabled"].isNull() ||
+      doc["moonLed"]["maxBrightness"].isNull() ||
+      doc["moonLed"]["hue"].isNull();
+  if (hasLegacyWiFiConfig) {
+    const JsonObject legacyWifi = doc["wifi"].as<JsonObject>();
+    const char* legacySsid = legacyWifi["ssid"] | "";
+    const char* legacyPassword = legacyWifi["password"] | "";
+    if (legacySsid[0] != '\0' && !wifi_has_credentials()) {
+      (void)wifi_save_credentials(legacySsid, legacyPassword);
     }
   }
 
-  double lng = currentConfig.location.lng;
-  if (parseCoordinateValue(location["lng"], lng)) {
-    if (isValidLongitude(lng)) {
-      currentConfig.location.lng = lng;
-    } else {
-      Serial.printf("[config] ignoring invalid longitude: %.6f\n", lng);
-    }
-  }
+  copyConfigString(currentConfig.devname, doc["devname"], currentConfig.devname);
+  copyConfigString(currentConfig.name, doc["name"], currentConfig.name);
+  applyNtpConfigJson(currentConfig, doc["ntp"].as<JsonObjectConst>());
+  applyLocationConfigJson(currentConfig, doc["location"].as<JsonObjectConst>());
+  applyMoonLedConfigJson(currentConfig, doc["moonLed"].as<JsonObjectConst>());
+  applyTimeScheduleConfigJson(currentConfig, doc["timeSchedule"].as<JsonObjectConst>());
+  applyOutputConfigJson(currentConfig, doc);
+  sanitizeConfigStrings(currentConfig);
 
-  int storedBrightness = clampConfigValue<int>(
-      doc["brightness"] | static_cast<int>(currentConfig.brightness), 0, 255);
-  if (storedBrightness > 100) {
-    storedBrightness = (storedBrightness * 100 + 127) / 255;
-  }
-  currentConfig.brightness = static_cast<uint8_t>(clampConfigValue<int>(storedBrightness, 0, 100));
-  currentConfig.candleOn = doc["candleOn"] | (currentConfig.brightness > 0);
-
-  if (currentConfig.brightness == 0) {
-    currentConfig.candleOn = false;
-  }
-
-  if (currentConfig.ota.hostname[0] == '\0') {
-    strlcpy(currentConfig.ota.hostname, currentConfig.wifi.devname, sizeof(currentConfig.ota.hostname));
+  if (needsConfigMigration) {
+    Serial.println("[config] migrating settings file");
+    return configSave();
   }
 
   return true;

@@ -13,7 +13,6 @@ uint8_t s_targetValue = 0;
 uint32_t s_transitionStartedMs = 0;
 bool s_initialized = false;
 
-// Вычисляет текущее значение яркости внутри критической секции.
 uint8_t interpolate_locked(uint32_t nowMs) {
   if (s_currentValue == s_targetValue) {
     return s_currentValue;
@@ -51,7 +50,6 @@ uint8_t interpolate_locked(uint32_t nowMs) {
 }
 }  // namespace
 
-// Инициализирует состояние плавного перехода начальной яркостью.
 void smooth_change_init(uint8_t initialValue) {
   const uint32_t nowMs = millis();
 
@@ -64,7 +62,6 @@ void smooth_change_init(uint8_t initialValue) {
   portEXIT_CRITICAL(&s_smoothChangeMux);
 }
 
-// Задаёт новую целевую яркость и запускает переход к ней.
 void smooth_change_set_target(uint8_t targetValue) {
   const uint32_t nowMs = millis();
 
@@ -92,7 +89,6 @@ void smooth_change_set_target(uint8_t targetValue) {
   portEXIT_CRITICAL(&s_smoothChangeMux);
 }
 
-// Обновляет промежуточную яркость по времени и возвращает её.
 uint8_t smooth_change_update() {
   const uint32_t nowMs = millis();
   uint8_t value = 0;
@@ -112,18 +108,6 @@ uint8_t smooth_change_update() {
   return value;
 }
 
-// Возвращает текущую целевую яркость перехода.
-uint8_t smooth_change_get_target() {
-  uint8_t value = 0;
-
-  portENTER_CRITICAL(&s_smoothChangeMux);
-  value = s_targetValue;
-  portEXIT_CRITICAL(&s_smoothChangeMux);
-
-  return value;
-}
-
-// Показывает, продолжается ли сейчас плавное изменение яркости.
 bool smooth_change_is_active() {
   bool active = false;
 

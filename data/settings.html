@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    <title>Настройки - Candle Light</title>
+    <link rel="stylesheet" href="styles/style.css?v=20260619" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="app-header">
+        <div>
+          <p class="app-kicker">
+            ESP32S3Zero / IS31FL3731 16x9 Charlieplexed PWM LED I2C Driver / LED
+            Matrix
+          </p>
+          <h1>Настройки</h1>
+          <p class="app-subtitle">Настройки устройства и сети</p>
+        </div>
+        <nav class="nav-links main-menu" aria-label="Основное меню">
+          <a class="sun-link" href="index.html">Главная</a>
+          <a class="sun-link sun-link--active" href="settings.html"
+            >Настройки</a
+          >
+          <a class="sun-link" href="update.html">Обновление</a>
+          <a class="sun-link" href="anim.html">Матрица</a>
+          <a class="sun-link" href="sun.html">Солнце</a>
+          <a class="sun-link" href="moon.html">Луна</a>
+        </nav>
+      </header>
+
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+      <form id="settingsForm" class="panel settings-panel" autocomplete="off">
+        <div class="panel-head">
+          <div>
+            <p class="panel-label">Настройки</p>
+            <h2>Настройки устройства</h2>
+          </div>
+        </div>
+
+        <div class="settings-groups">
+          <section class="settings-group" aria-labelledby="settingsDeviceTitle">
+            <div class="settings-group-head">
+              <p class="panel-label">Устройство</p>
+              <h3 id="settingsDeviceTitle">Устройство</h3>
+            </div>
+            <div class="form-grid">
+              <label class="form-field">
+                <span>Имя устройства</span>
+                <input type="text" id="devname" value="" />
+              </label>
+            </div>
+          </section>
+
+          <section class="settings-group" aria-labelledby="settingsWifiTitle">
+            <div class="settings-group-head">
+              <p class="panel-label">Wi-Fi</p>
+              <h3 id="settingsWifiTitle">Подключение к сети</h3>
+            </div>
+            <div class="form-grid">
+              <label class="form-field">
+                <span>SSID</span>
+                <input type="text" id="ssid" value="" autocomplete="off" />
+              </label>
+              <label class="form-field">
+                <span>Пароль Wi-Fi</span>
+                <input
+                  type="password"
+                  id="password"
+                  value=""
+                  autocomplete="new-password"
+                />
+              </label>
+            </div>
+          </section>
+
+          <section class="settings-group" aria-labelledby="settingsTimeTitle">
+            <div class="settings-group-head">
+              <p class="panel-label">Время</p>
+              <h3 id="settingsTimeTitle">Время и NTP</h3>
+            </div>
+            <div class="form-grid">
+              <label class="form-field">
+                <span>NTP сервер</span>
+                <input type="text" id="ntp_server" value="" />
+              </label>
+              <label class="form-field">
+                <span>Резервный NTP</span>
+                <input type="text" id="ntp_server2" value="" />
+              </label>
+              <label class="form-field form-field--wide">
+                <span>Часовой пояс</span>
+                <input type="text" id="ntp_timezone" value="" />
+              </label>
+              <label class="form-field form-field--wide">
+                <span>Ручное время</span>
+                <input
+                  type="text"
+                  id="manualTime"
+                  value=""
+                  placeholder="15:19 19.06.2026"
+                  inputmode="numeric"
+                  pattern="[0-9]{2}:[0-9]{2} [0-9]{2}\.[0-9]{2}\.[0-9]{4}"
+                  autocomplete="off"
+                />
+              </label>
+              <div class="form-field form-field--wide">
+                <button class="btn btn-secondary" type="button" id="manualTimeBtn">
+                  Установить время
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <section
+            class="settings-group"
+            aria-labelledby="settingsLocationTitle"
+          >
+            <div class="settings-group-head">
+              <p class="panel-label">Локация</p>
+              <h3 id="settingsLocationTitle">Геолокация</h3>
+            </div>
+            <div class="form-grid">
+              <label class="form-field">
+                <span>Широта</span>
+                <input
+                  type="text"
+                  inputmode="decimal"
+                  id="lat"
+                  value=""
+                  placeholder="55.7558"
+                />
+              </label>
+              <label class="form-field">
+                <span>Долгота</span>
+                <input
+                  type="text"
+                  inputmode="decimal"
+                  id="lon"
+                  value=""
+                  placeholder="37.6173"
+                />
+              </label>
+            </div>
+          </section>
+        </div>
+
+        <div class="panel-actions settings-actions">
+          <button class="btn btn-secondary" type="button" id="resetBtn">
+            Сбросить Wi-Fi
+          </button>
+          <button class="btn" type="submit" id="saveBtn" disabled>
+            Сохранить
+          </button>
+        </div>
+      </form>
+    </main>
+    <script src="locales/ru/common.js?v=20260619"></script>
+    <script src="locales/ru/settings.js?v=20260619"></script>
+    <script src="scripts/core.js?v=20260619"></script>
+    <script src="scripts/settings.js?v=20260619"></script>
+    <script src="scripts/app.js?v=20260619"></script>
+  </body>
+</html>

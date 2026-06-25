@@ -4,45 +4,53 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="/favicon.ico" type="image/x-icon" />
-    <title>Свеча ESP32 — управление</title>
-    <link rel="stylesheet" href="style.css" />
+    <title>Candle Light</title>
+    <link rel="stylesheet" href="styles/style.css?v=20260619" />
   </head>
   <body>
-    <main class="main-wrap">
-      <section class="card">
-        <div class="card-layout">
-          <aside class="art-preview">
+    <main class="app-shell">
+      <header class="app-header">
+        <div>
+          <p class="app-kicker">ESP32S3Zero / IS31FL3731 16x9 Charlieplexed PWM LED I2C Driver / LED Matrix</p>
+          <h1 id="deviceTitle">Candle</h1>
+          <p class="app-subtitle" id="deviceSubtitle">
+            Загрузка состояния устройства...
+          </p>
+        </div>
+        <nav class="nav-links main-menu" aria-label="Основное меню">
+          <a class="sun-link sun-link--active" href="index.html">Главная</a>
+          <a class="sun-link" href="settings.html">Настройки</a>
+          <a class="sun-link" href="update.html">Обновление</a>
+          <a class="sun-link" href="anim.html">Матрица</a>
+          <a class="sun-link" href="sun.html">Солнце</a>
+          <a class="sun-link" href="moon.html">Луна</a>
+        </nav>
+      </header>
+
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+      <section class="dashboard-grid">
+        <article class="panel live-panel">
+          <div class="panel-head">
+            <div>
+              <p class="panel-label">Управление</p>
+              <h2>Управление свечой</h2>
+            </div>
+            <div class="time-pill" id="status">--:-- --.--.----</div>
+          </div>
+
+          <div class="live-layout">
             <a
               class="art-preview-shell"
               href="anim.html"
-              aria-label="Открыть страницу анимации"
-              title="Открыть анимацию"
+              aria-label="Открыть анимацию матрицы"
             >
               <div id="artMatrix" class="art-matrix"></div>
             </a>
-          </aside>
 
-          <div class="card-content">
-            <div class="title-row">
-              <h1 class="title" id="deviceTitle">Свеча ESP32</h1>
-              <nav class="nav-links">
-                <a
-                  class="sun-link"
-                  href="sun.html"
-                  title="Открыть карту солнечного пути"
-                  >Солнце</a
-                >
-                <a
-                  class="sun-link"
-                  href="moon.html"
-                  title="Открыть страницу фазы луны"
-                  >Луна</a
-                >
-              </nav>
-            </div>
-            <form id="settingsForm" autocomplete="off">
-              <div class="form-group">
-                <label for="brightness">Яркость, %</label>
+            <div class="control-stack">
+              <div class="brightness-control">
+                <label for="brightness">Яркость</label>
                 <div class="range-row">
                   <input
                     type="range"
@@ -51,97 +59,84 @@
                     max="100"
                     value=""
                   />
-                  <span id="brightnessValue"></span>
+                  <output id="brightnessValue" for="brightness">0%</output>
                 </div>
               </div>
-              <div class="form-group toggle-row mode-row">
-                <div class="mode-control">
-                  <span class="mode-label">Ручной</span>
-                  <div class="switch-with-labels">
-                    <span class="switch-text">Выкл</span>
-                    <label class="switch">
-                      <input type="checkbox" id="candleOn" />
-                      <span class="slider"></span>
-                    </label>
-                    <span class="switch-text">Вкл</span>
-                  </div>
-                </div>
-                <div class="mode-control">
-                  <span class="mode-label">Авто</span>
-                  <div class="switch-with-labels">
-                    <span class="switch-text">Ручной</span>
-                    <label class="switch">
-                      <input type="checkbox" id="autoMode" />
-                      <span class="slider"></span>
-                    </label>
-                    <span class="switch-text">Авто</span>
-                  </div>
+
+              <div class="segmented-block">
+                <span class="mode-label">Режим работы</span>
+                <label class="switch-line">
+                  <input type="checkbox" id="manualMode" />
+                  <span class="switch"><span class="slider"></span></span>
+                  <span id="manualModeStateText">Ручной режим</span>
+                </label>
+                <label class="switch-line">
+                  <input type="checkbox" id="autoMode" />
+                  <span class="switch"><span class="slider"></span></span>
+                  <span id="autoStateText">Авто по солнцу</span>
+                </label>
+                <label class="switch-line">
+                  <input type="checkbox" id="autoTimeMode" />
+                  <span class="switch"><span class="slider"></span></span>
+                  <span id="autoTimeStateText"
+                    >&#1040;&#1074;&#1090;&#1086; &#1087;&#1086;
+                    &#1074;&#1088;&#1077;&#1084;&#1077;&#1085;&#1080;</span
+                  >
+                </label>
+                <div class="time-schedule-row">
+                  <label class="time-field">
+                    <span>&#1042;&#1082;&#1083;.</span>
+                    <input type="time" id="timeOn" value="18:00" />
+                  </label>
+                  <label class="time-field">
+                    <span>&#1042;&#1099;&#1082;&#1083;.</span>
+                    <input type="time" id="timeOff" value="23:00" />
+                  </label>
                 </div>
               </div>
-              <details class="settings-details">
-                <summary>Настройки</summary>
-                <div class="settings-content">
-                  <div class="form-group">
-                    <label for="devname">Имя устройства</label>
-                    <input type="text" id="devname" value="" />
-                  </div>
-                  <div class="form-group">
-                    <label for="ssid">SSID</label>
-                    <input type="text" id="ssid" value="" />
-                  </div>
-                  <div class="form-group">
-                    <label for="password">Пароль</label>
-                    <input type="password" id="password" value="" />
-                  </div>
-                  <div class="form-group">
-                    <label for="ntp_server">Сервер времени</label>
-                    <input type="text" id="ntp_server" value="" />
-                  </div>
-                  <div class="form-group">
-                    <label for="ntp_timezone">Часовой пояс</label>
-                    <input type="text" id="ntp_timezone" value="" />
-                  </div>
-                  <div class="form-group">
-                    <label for="lat">Широта (lat)</label>
-                    <input
-                      type="text"
-                      inputmode="decimal"
-                      id="lat"
-                      value=""
-                      placeholder="55.7558"
-                    />
-                  </div>
-                  <div class="form-group">
-                    <label for="lon">Долгота (lon)</label>
-                    <input
-                      type="text"
-                      inputmode="decimal"
-                      id="lon"
-                      value=""
-                      placeholder="37.6173"
-                    />
-                  </div>
-                  <div class="btn-row">
-                    <button class="btn" type="submit" id="saveBtn" disabled>
-                      Сохранить
-                    </button>
-                    <button
-                      class="btn btn-secondary"
-                      type="button"
-                      id="resetBtn"
-                    >
-                      Сбросить
-                    </button>
-                  </div>
-                </div>
-              </details>
-            </form>
-            <div class="status" id="status">--:-- -- -- ----</div>
+            </div>
           </div>
-        </div>
+        </article>
+
+        <article class="panel status-panel">
+          <div class="panel-head">
+            <div>
+              <p class="panel-label">Статус</p>
+              <h2>Состояние</h2>
+            </div>
+            <span id="firmwareBadge" class="badge">v--</span>
+          </div>
+          <div class="status-grid">
+            <div class="status-item">
+              <span class="status-key">Wi-Fi STA</span>
+              <strong id="wifiStaStatus">--</strong>
+              <small id="wifiStaDetails">--</small>
+            </div>
+            <div class="status-item">
+              <span class="status-key">Setup AP</span>
+              <strong id="wifiApStatus">--</strong>
+              <small id="wifiApDetails">--</small>
+            </div>
+            <div class="status-item">
+              <span class="status-key">NTP</span>
+              <strong id="ntpStatus">--</strong>
+              <small id="ntpDetails">--</small>
+            </div>
+            <div class="status-item">
+              <span class="status-key">Авторежим</span>
+              <strong id="autoModeStatus">--</strong>
+              <small id="autoModeDetails">--</small>
+            </div>
+          </div>
+        </article>
       </section>
     </main>
-    <script src="app.js"></script>
-    <script src="art.js"></script>
+    <script src="locales/ru/common.js?v=20260619"></script>
+    <script src="locales/ru/index.js?v=20260619"></script>
+    <script src="scripts/core.js?v=20260619"></script>
+    <script src="scripts/live.js?v=20260619"></script>
+    <script src="scripts/app.js?v=20260619"></script>
+    <script src="scripts/art-data.js?v=20260619"></script>
+    <script src="scripts/art.js?v=20260619"></script>
   </body>
 </html>

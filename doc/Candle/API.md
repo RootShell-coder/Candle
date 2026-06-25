@@ -1,95 +1,177 @@
 # HTTP API
 
-Веб-сервер слушает на порту **80**. Все API-ответы имеют тип `application/json`.
+The device serves the web UI and HTTP API on port `80`. JSON API responses use `application/json`. Dynamic responses that represent live state use `Cache-Control: no-store`.
 
----
+The API is designed for a trusted local network and does not include authentication.
 
-## Обзор эндпоинтов
+## Endpoint Summary
 
-| Метод | URL               | Описание                                 |
-| ----- | ----------------- | ---------------------------------------- |
-| GET   | `/`               | Веб-интерфейс (`index.html` из LittleFS) |
-| GET   | `/api/settings`   | Получить текущие настройки               |
-| POST  | `/api/save`       | Сохранить настройки                      |
-| GET   | `/api/date`       | Текущее время и солнечный режим          |
-| GET   | `/api/sun`        | Положение солнца и расписание дня        |
-| GET   | `/api/moon`       | Фаза луны                                |
-| GET   | `/api/brightness` | Получить яркость                         |
-| POST  | `/api/brightness` | Установить яркость                       |
-| POST  | `/api/reset`      | Очистка Wi-Fi учётных данных             |
-| GET   | `/metrics`        | Метрики Prometheus                       |
+| Method | Path                     | Description                                                                           |
+| ------ | ------------------------ | ------------------------------------------------------------------------------------- |
+| `GET`  | `/`                      | Web UI entry point from LittleFS.                                                     |
+| `GET`  | `/api/settings`          | Current application settings, firmware metadata, Wi-Fi display state, and mode flags. |
+| `POST` | `/api/save`              | Save settings and restart.                                                            |
+| `GET`  | `/api/date`              | Current local time, NTP diagnostics, Wi-Fi status, and candle state.                  |
+| `POST` | `/api/time`              | Set manual local time before NTP synchronization.                                     |
+| `GET`  | `/api/sun`               | Current sun position and local-day solar events.                                      |
+| `GET`  | `/api/moon`              | Current moon phase and moon LED state.                                                |
+| `POST` | `/api/moon-led`          | Save and apply optional WS2812 moon LED settings without restart.                     |
+| `GET`  | `/api/brightness`        | Current configured brightness.                                                        |
+| `POST` | `/api/brightness`        | Update brightness and optional manual/sun/time-schedule flags.                        |
+| `POST` | `/api/reset`             | Clear Wi-Fi credentials and restart.                                                  |
+| `POST` | `/api/update/firmware`   | Upload `firmware.bin` as raw binary.                                                  |
+| `POST` | `/api/update/filesystem` | Upload `littlefs.bin` as raw binary.                                                  |
+| `POST` | `/api/update/restart`    | Restart after web update.                                                             |
+| `GET`  | `/api/update`            | OTA status.                                                                           |
+| `GET`  | `/metrics`               | Prometheus metrics.                                                                   |
 
----
+Captive portal probe paths such as `/generate_204`, `/gen_204`, `/hotspot-detect.html`, `/ncsi.txt`, `/connecttest.txt`, and `/fwlink` are redirected to the setup portal while captive portal mode is active.
+
+## Common Status Response
+
+Error responses use this shape:
+
+```json
+{
+  "status": "error",
+  "message": "invalid JSON payload"
+}
+```
+
+Successful command responses use:
+
+```json
+{
+  "status": "ok",
+  "message": "device restarting"
+}
+```
 
 ## GET `/api/settings`
 
-Возвращает все текущие настройки устройства.
+Returns current settings plus UI metadata.
 
-**Ответ 200:**
+Example:
 
 ```json
 {
-  "devname": "candle",
-  "name": "Candle light",
-  "ssid": "MyNetwork",
-  "password": "secret",
+  "devname": "candle-light1",
+  "name": "Candle",
+  "firmwareVersion": "1.5.3",
+  "buildCommit": "a1b2c3d4e5f6",
+  "buildDate": "2026-06-25T09:30:00Z",
+  "ssid": "HomeWiFi",
+  "password": "",
   "ntp_server": "pool.ntp.org",
+  "ntp_server2": "",
   "ntp_timezone": "Europe/Moscow",
-  "lat": 55.29592,
-  "lon": 35.58514,
+  "validTime": true,
+  "ntpSynchronized": true,
+  "manualTimeAllowed": false,
+  "wifiStaConnected": true,
+  "wifiHasIp": true,
+  "lat": 55.4997807,
+  "lon": 35.9809486,
   "autoMode": true,
-  "sunMode": "Civil",
+  "autoTimeMode": false,
+  "timeOnMinute": 1080,
+  "timeOffMinute": 1380,
+  "sunMode": "night",
   "autoCandleOn": true,
+  "autoTimeCandleOn": false,
   "brightness": 16,
-  "candleOn": true
+  "candleOn": true,
+  "moonLed": {
+    "enabled": false,
+    "maxBrightness": 25,
+    "hue": 42,
+    "currentBrightness": 0,
+    "hardwareEnabled": true
+  }
 }
 ```
 
-| Поле           | Тип    | Описание                                                                      |
-| -------------- | ------ | ----------------------------------------------------------------------------- |
-| `devname`      | string | Сетевое имя устройства                                                        |
-| `name`         | string | Отображаемое имя                                                              |
-| `ssid`         | string | Имя Wi-Fi сети                                                                |
-| `password`     | string | Пароль Wi-Fi                                                                  |
-| `ntp_server`   | string | Адрес NTP-сервера                                                             |
-| `ntp_timezone` | string | Часовой пояс                                                                  |
-| `lat`          | float  | Широта                                                                        |
-| `lon`          | float  | Долгота                                                                       |
-| `autoMode`     | bool   | Автоматический режим по солнцу                                                |
-| `sunMode`      | string | Текущий солнечный режим (`Day`, `Civil`, `Nautical`, `Astronomical`, `Night`) |
-| `autoCandleOn` | bool   | Должна ли свеча быть включена сейчас по расписанию                            |
-| `brightness`   | int    | Яркость 0..100 %                                                              |
-| `candleOn`     | bool   | Ручное состояние свечи                                                        |
-
----
+| Field                       | Type    | Description                                                                                                        |
+| --------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------ |
+| `devname`                   | string  | Device hostname.                                                                                                   |
+| `name`                      | string  | Display name.                                                                                                      |
+| `firmwareVersion`           | string  | Firmware version from `FIRMWARE_VERSION`.                                                                          |
+| `buildCommit`               | string  | Git commit embedded at build time, or `unknown` when unavailable.                                                  |
+| `buildDate`                 | string  | CI commit timestamp, source-date timestamp, git commit date, or `unknown`.                                         |
+| `ssid`                      | string  | Stored Wi-Fi SSID, if configured.                                                                                  |
+| `password`                  | string  | Always empty. Passwords are not returned.                                                                          |
+| `ntp_server`                | string  | Primary NTP server.                                                                                                |
+| `ntp_server2`               | string  | Optional secondary NTP server.                                                                                     |
+| `ntp_timezone`              | string  | Supported timezone name or POSIX timezone string.                                                                  |
+| `validTime`                 | bool    | Current time is later than the firmware validity threshold.                                                        |
+| `ntpSynchronized`           | bool    | Time has been synchronized by NTP.                                                                                 |
+| `manualTimeAllowed`         | bool    | Manual time can still be set through `/api/time`.                                                                  |
+| `wifiStaConnected`          | bool    | Station interface is connected to Wi-Fi.                                                                           |
+| `wifiHasIp`                 | bool    | Station interface has an IP address.                                                                               |
+| `lat`                       | number  | Latitude.                                                                                                          |
+| `lon`                       | number  | Longitude.                                                                                                         |
+| `autoMode`                  | bool    | Sun-based automatic mode enabled.                                                                                  |
+| `autoTimeMode`              | bool    | Fixed daily time schedule mode enabled.                                                                            |
+| `timeOnMinute`              | integer | Schedule start minute from local midnight, `0..1439`.                                                              |
+| `timeOffMinute`             | integer | Schedule stop minute from local midnight, `0..1439`.                                                               |
+| `sunMode`                   | string  | Current mode: `day`, `civil`, `nautical`, `astronomical`, `night`, `time`, `manual`, `waiting_time`, or `unknown`. |
+| `autoCandleOn`              | bool    | Output requested by the active automatic mode.                                                                     |
+| `autoTimeCandleOn`          | bool    | Output requested specifically by fixed time schedule mode.                                                         |
+| `brightness`                | integer | Configured brightness percent, `0..100`.                                                                           |
+| `candleOn`                  | bool    | Manual output state.                                                                                               |
+| `moonLed.enabled`           | bool    | Optional moon WS2812 LED enabled.                                                                                  |
+| `moonLed.maxBrightness`     | integer | Upper moon LED brightness limit, `0..100`.                                                                         |
+| `moonLed.hue`               | integer | Moon LED hue in degrees, `0..360`.                                                                                 |
+| `moonLed.currentBrightness` | integer | Current calculated moon LED output brightness, `0..100`.                                                           |
+| `moonLed.hardwareEnabled`   | bool    | `true` when `MOON_LED_PIN >= 0` at build time.                                                                     |
 
 ## POST `/api/save`
 
-Сохраняет настройки и перезапускает устройство (~750 мс).
+Saves application settings and restarts the device.
 
-**Тело запроса** — JSON с теми же полями, что возвращает `/api/settings` (все поля необязательны):
+Request body is JSON. All fields are optional; omitted fields keep their current value.
 
 ```json
 {
-  "devname": "candle",
-  "name": "Candle light",
-  "ssid": "MyNetwork",
+  "devname": "candle-light1",
+  "name": "Candle",
+  "ssid": "HomeWiFi",
   "password": "secret",
   "ntp_server": "pool.ntp.org",
+  "ntp_server2": "",
   "ntp_timezone": "Europe/Moscow",
-  "lat": 55.29592,
-  "lon": 35.58514,
+  "lat": 55.4997807,
+  "lon": 35.9809486,
   "autoMode": true,
+  "autoTimeMode": false,
+  "timeOnMinute": 1080,
+  "timeOffMinute": 1380,
   "brightness": 50,
-  "candleOn": true
+  "candleOn": true,
+  "moonLed": {
+    "enabled": true,
+    "maxBrightness": 25,
+    "hue": 42
+  }
 }
 ```
 
-Поле `brightness` принимается в процентах (0..100). Значения 101..255 трактуются как устаревший формат и конвертируются автоматически.
-Поле `candleOn` учитывается только при `autoMode = false`.
-Если `brightness = 0` — `candleOn` принудительно становится `false`.
+Behavior:
 
-**Ответ 200:**
+- JSON body size is limited to 4096 bytes.
+- `brightness` accepts `0..100`; values `101..255` are converted to percent.
+- `autoMode` enables sun-based mode.
+- `autoTimeMode` enables fixed time schedule mode.
+- Sun mode and fixed time schedule mode are mutually exclusive; when `autoTimeMode` is true, `autoMode` is cleared by runtime normalization.
+- `timeOnMinute` and `timeOffMinute` accept `0..1439`.
+- `candleOn` is used only when manual control is effective: neither automatic mode is active, or valid time is unavailable.
+- `brightness = 0` forces `candleOn = false`.
+- `moonLed.maxBrightness` accepts `0..100`; values `101..255` are converted to percent.
+- `moonLed.hue` accepts `0..360`.
+- Wi-Fi credentials are stored in NVS, not in `settings.json`.
+- If `password` is empty and the SSID did not change, the stored Wi-Fi password is kept.
+
+Successful response:
 
 ```json
 {
@@ -99,70 +181,139 @@
 }
 ```
 
-**Ответ 400** — невалидный JSON:
+Possible errors:
 
-```json
-{ "status": "error", "message": "invalid JSON payload" }
-```
-
-**Ответ 500** — ошибка записи на LittleFS:
-
-```json
-{ "status": "error", "message": "failed to save settings" }
-```
-
----
+| HTTP  | Message                            |
+| ----- | ---------------------------------- |
+| `400` | `invalid JSON payload`             |
+| `413` | `settings payload is too large`    |
+| `500` | `request buffer allocation failed` |
+| `500` | `failed to save settings`          |
+| `500` | `failed to save Wi-Fi credentials` |
 
 ## GET `/api/date`
 
-Возвращает текущее местное время и состояние свечи. Полезен для обновления UI без полной перезагрузки настроек.
-Ответ не кешируется (`Cache-Control: no-store`).
+Returns current local time, candle state, NTP diagnostics, and Wi-Fi diagnostics.
 
-**Ответ 200:**
+Example:
 
 ```json
 {
   "valid": true,
-  "date": "14:35 28.05.2026",
-  "sunMode": "Day",
-  "autoCandleOn": false,
-  "candleOn": false
+  "date": "14:35 28.06.2026",
+  "sunMode": "night",
+  "autoCandleOn": true,
+  "autoTimeCandleOn": false,
+  "candleOn": true,
+  "ntp": {
+    "wifiConnected": true,
+    "hasIp": true,
+    "syncInProgress": false,
+    "validTime": true,
+    "ntpSynchronized": true,
+    "manualTimeAllowed": false,
+    "bootSyncPending": false,
+    "dnsResolved": true,
+    "failureStreak": 0,
+    "sntpSyncStatus": 1,
+    "nextSyncInMs": 21420000,
+    "syncTimeoutInMs": 0,
+    "lastSuccessEpoch": 1782657300,
+    "server": "pool.ntp.org",
+    "serverIp": "162.159.200.1",
+    "timezone": "Europe/Moscow"
+  },
+  "wifi": {
+    "staConnected": true,
+    "setupApActive": false,
+    "ssid": "HomeWiFi",
+    "ip": "192.168.1.45",
+    "rssi": -62,
+    "setupSsid": "candle-setup",
+    "setupIp": ""
+  }
 }
 ```
 
-| Поле           | Тип    | Описание                                                                                        |
-| -------------- | ------ | ----------------------------------------------------------------------------------------------- |
-| `valid`        | bool   | `true` — время синхронизировано через NTP                                                       |
-| `date`         | string | Местное время в формате `HH:MM DD.MM.YYYY`. При отсутствии синхронизации — `"--:-- --.--.----"` |
-| `sunMode`      | string | Текущий солнечный режим                                                                         |
-| `autoCandleOn` | bool   | Должна ли свеча быть включена по расписанию                                                     |
-| `candleOn`     | bool   | Фактическое состояние свечи                                                                     |
+NTP status notes:
 
----
+| Field                 | Description                                                            |
+| --------------------- | ---------------------------------------------------------------------- |
+| `valid` / `validTime` | `true` when system time is later than the firmware validity threshold. |
+| `ntpSynchronized`     | `true` after successful NTP synchronization.                           |
+| `manualTimeAllowed`   | `true` when `/api/time` can still set time manually.                   |
+| `sntpSyncStatus`      | ESP SNTP status: `0` reset/waiting, `1` completed, `2` in progress.    |
+| `dnsResolved`         | Primary NTP hostname resolved before sync.                             |
+| `failureStreak`       | Consecutive NTP failures.                                              |
+| `nextSyncInMs`        | Delay until the next scheduled sync attempt.                           |
+| `syncTimeoutInMs`     | Remaining timeout for the active sync attempt.                         |
 
-## GET `/api/sun`
+## POST `/api/time`
 
-Вычисляет положение солнца и полное расписание событий на текущие сутки.
-Ответ не кешируется (`Cache-Control: no-store`).
+Sets manual local time before NTP synchronization. The endpoint accepts either:
 
-**Query-параметры** (необязательны — по умолчанию используются координаты из настроек):
+- query or form parameter `value`;
+- a JSON body with `{"value":"HH:MM DD.MM.YYYY"}`;
+- a plain small body containing `HH:MM DD.MM.YYYY`.
 
-| Параметр        | Описание                                                           |
-| --------------- | ------------------------------------------------------------------ |
-| `lat`           | Широта (−90..90). Принимаются числа и строки с точкой или запятой. |
-| `lon` или `lng` | Долгота (−180..180).                                               |
+Example:
 
-**Ответ 200:**
+```http
+POST /api/time?value=15:19%2019.06.2026
+```
+
+Successful response contains the same live fields as `/api/date`, plus top-level time flags:
 
 ```json
 {
   "status": "ok",
   "validTime": true,
-  "timestamp": 1748425800,
+  "ntpSynchronized": false,
+  "manualTimeAllowed": true,
+  "wifiStaConnected": true,
+  "wifiHasIp": true
+}
+```
+
+Possible errors:
+
+| HTTP  | Message                                                    |
+| ----- | ---------------------------------------------------------- |
+| `400` | `time value is required`                                   |
+| `400` | `time format must be HH:MM DD.MM.YYYY`                     |
+| `409` | `time is already synchronized by NTP`                      |
+| `409` | `manual time is available only before NTP synchronization` |
+| `413` | `time payload is too large`                                |
+| `500` | `request buffer allocation failed`                         |
+| `500` | `failed to set manual time`                                |
+
+## GET `/api/sun`
+
+Calculates current sun position and local-day events. The endpoint uses configured coordinates unless query parameters override them.
+
+Query parameters:
+
+| Parameter | Description             |
+| --------- | ----------------------- |
+| `lat`     | Latitude, `-90..90`.    |
+| `lon`     | Longitude, `-180..180`. |
+| `lng`     | Alias for `lon`.        |
+
+Example:
+
+```json
+{
+  "status": "ok",
+  "validTime": true,
+  "timestamp": 1782657300,
   "timezoneOffsetMinutes": 180,
-  "sunMode": "Day",
-  "location": {   "lat": 55.29592, "lon": 35.58514, },
-  "date": { "year": 2026, "month": 5, "day": 28 },
+  "sunMode": "day",
+  "pathSampleMinutes": 10,
+  "pathAlgorithm": "raw-10m-threshold-crossings-v3",
+  "pathMinElevation": -12.5,
+  "pathMaxElevation": 57.2,
+  "location": { "lat": 55.4997807, "lon": 35.9809486 },
+  "date": { "year": 2026, "month": 6, "day": 28 },
   "now": {
     "minuteOfDay": 875,
     "azimuth": 248.3,
@@ -189,104 +340,117 @@
     "astronomicalEnd": 1331
   },
   "path": [
-    { "minute": 0, "azimuth": 2.1, "elevation": -23.4, "mode": "Night" },
-    { "minute": 10, "azimuth": 4.8, "elevation": -22.1, "mode": "Night" }
+    { "minute": 0, "azimuth": 2.1, "elevation": -23.4, "mode": "night" },
+    { "minute": 10, "azimuth": 4.8, "elevation": -22.1, "mode": "night" }
   ]
 }
 ```
 
-Поля `events.*Begin` / `.*End` — минута суток (0..1439) от полуночи по местному времени.
-Массив `path` — выборка через 10 минут (144 точки) для построения графика дня.
+Event time fields are minutes from local midnight in the range `0..1439`.
 
-**Ошибки:**
+`path` is built from 10-minute daily samples plus exact threshold crossing points for `0`, `-6`, `-12`, and `-18` degrees. The response includes `pathSampleMinutes`, `pathAlgorithm`, `pathMinElevation`, and `pathMaxElevation`.
 
-| Код | Сообщение                                                  |
-| --- | ---------------------------------------------------------- |
-| 400 | `invalid lat` / `invalid lon` / `coordinates out of range` |
-| 500 | Ошибка вычисления положения или событий                    |
-| 503 | Недостаточно памяти для формирования ответа                |
+Possible errors:
 
----
+| HTTP  | Message                                                                 |
+| ----- | ----------------------------------------------------------------------- |
+| `400` | `invalid lat`, `invalid lon`, `invalid lng`, `coordinates out of range` |
+| `500` | `failed to resolve local time`                                          |
+| `500` | `failed to calculate current sun position`                              |
+| `500` | `failed to calculate sun events`                                        |
+| `500` | `failed to calculate sun path`                                          |
+| `503` | `insufficient memory for sun payload`                                   |
 
 ## GET `/api/moon`
 
-Вычисляет текущую фазу луны по синодическому периоду (алгоритм Жана Мееса).
-Ответ не кешируется (`Cache-Control: no-store`).
+Returns the current moon phase and moon LED state.
 
-Требует синхронизированного времени от NTP. При отсутствии времени возвращает `503`.
-
-**Ответ 200:**
+Example:
 
 ```json
 {
   "status": "ok",
   "validTime": true,
-  "timestamp": 1748425800,
-  "ageDays": 14.73,
-  "illumination": 0.98,
-  "phase": 4,
-  "phaseName": "Full Moon"
+  "timestamp": 1782657300,
+  "ageDays": 12.8,
+  "illumination": 0.91,
+  "phase": 3,
+  "phaseName": "Waxing gibbous",
+  "moonLed": {
+    "enabled": true,
+    "maxBrightness": 25,
+    "hue": 42,
+    "currentBrightness": 23,
+    "hardwareEnabled": true
+  }
 }
 ```
 
-| Поле           | Тип    | Описание                                                                 |
-| -------------- | ------ | ------------------------------------------------------------------------ |
-| `status`       | string | `"ok"` при успехе                                                        |
-| `validTime`    | bool   | `true` — время синхронизировано через NTP                                |
-| `timestamp`    | uint32 | Unix timestamp момента вычисления (UTC)                                  |
-| `ageDays`      | float  | Возраст луны в сутках с последнего новолуния, [0 .. 29.53)               |
-| `illumination` | float  | Доля освещённого диска [0 .. 1], вычисляется как (1 − cos(2π·age/T)) / 2 |
-| `phase`        | int    | Индекс дискретной фазы [0 .. 7] (см. таблицу ниже)                       |
-| `phaseName`    | string | Название фазы на английском                                              |
+If time is not available, the endpoint returns HTTP `503`:
 
-### Фазы луны
+```json
+{ "status": "error", "message": "time not available" }
+```
 
-| Индекс | `phaseName`     | Русское название   | Диапазон возраста (сут) |
-| ------ | --------------- | ------------------ | ----------------------- |
-| 0      | New Moon        | Новолуние          | 0 .. 1.85               |
-| 1      | Waxing Crescent | Молодой месяц      | 1.85 .. 5.54            |
-| 2      | First Quarter   | Первая четверть    | 5.54 .. 9.22            |
-| 3      | Waxing Gibbous  | Прибывающая луна   | 9.22 .. 12.91           |
-| 4      | Full Moon       | Полнолуние         | 12.91 .. 16.60          |
-| 5      | Waning Gibbous  | Убывающая луна     | 16.60 .. 20.28          |
-| 6      | Last Quarter    | Последняя четверть | 20.28 .. 23.97          |
-| 7      | Waning Crescent | Стареющий месяц    | 23.97 .. 29.53          |
+## POST `/api/moon-led`
 
-Границы приблизительны — деление цикла на 8 равных секторов по ~3.69 сут каждый.
+Saves optional WS2812 moon LED settings and applies them immediately without restart. Parameters may be query string or form fields.
 
-**Ошибки:**
+| Parameter               | Required | Description                                                             |
+| ----------------------- | -------- | ----------------------------------------------------------------------- |
+| `enabled`               | no       | `0`, `1`, `true`, `false`, `on`, or `off`.                              |
+| `value` or `brightness` | no       | Maximum moon LED brightness, `0..100`. Values `101..255` are converted. |
+| `hue`                   | no       | Hue in degrees, `0..360`.                                               |
 
-| Код | Сообщение                                      |
-| --- | ---------------------------------------------- |
-| 503 | `time not available` — NTP не синхронизировано |
+Successful response:
 
----
+```json
+{
+  "status": "ok",
+  "moonLed": {
+    "enabled": true,
+    "maxBrightness": 25,
+    "hue": 42,
+    "currentBrightness": 23,
+    "hardwareEnabled": true
+  }
+}
+```
+
+Possible errors:
+
+| HTTP  | Message                                |
+| ----- | -------------------------------------- |
+| `400` | `hue must be an integer from 0 to 360` |
+| `500` | `failed to save moon led settings`     |
+
+The physical WS2812 output is available only when the firmware is built with `MOON_LED_PIN >= 0`.
 
 ## GET `/api/brightness`
 
-Возвращает текущую яркость.
-
-**Ответ 200:**
+Returns current configured brightness.
 
 ```json
-{ "status": "ok", "brightness": 50 }
+{
+  "status": "ok",
+  "brightness": 50
+}
 ```
-
----
 
 ## POST `/api/brightness`
 
-Устанавливает яркость с немедленным применением к матрице и сохранением в `settings.json`.
+Updates brightness and optional mode fields. Parameters may be query string or form fields.
 
-**Параметры** (form-data или query-string):
+| Parameter               | Required | Description                                                                |
+| ----------------------- | -------- | -------------------------------------------------------------------------- |
+| `value` or `brightness` | yes      | Brightness percent, `0..100`. Values `101..255` are converted.             |
+| `autoMode`              | no       | Sun mode flag. Accepted only when valid time is available.                 |
+| `autoTimeMode`          | no       | Fixed time schedule mode flag. Accepted only when valid time is available. |
+| `timeOnMinute`          | no       | Schedule start minute from local midnight, `0..1439`.                      |
+| `timeOffMinute`         | no       | Schedule stop minute from local midnight, `0..1439`.                       |
+| `candleOn`              | no       | Manual output state when manual control is effective.                      |
 
-| Параметр                 | Обязателен | Описание                                                                           |
-| ------------------------ | ---------- | ---------------------------------------------------------------------------------- |
-| `value` или `brightness` | да         | Яркость 0..100 %. Значения 101..255 конвертируются.                                |
-| `autoMode`               | нет        | `0`/`1`/`true`/`false` — включить/выключить автоматический режим                   |
-| `candleOn`               | нет        | `0`/`1`/`true`/`false` — ручное включение свечи (учитывается при `autoMode=false`) |
-
-**Ответ 200:**
+Successful response:
 
 ```json
 {
@@ -294,115 +458,140 @@
   "brightness": 50,
   "candleOn": true,
   "autoMode": false,
-  "autoCandleOn": false,
-  "sunMode": "Night"
+  "autoTimeMode": true,
+  "autoCandleOn": true,
+  "autoTimeCandleOn": true,
+  "sunMode": "time"
 }
 ```
 
-**Ответ 400** — некорректное значение яркости:
+Errors:
 
-```json
-{ "status": "error", "message": "brightness must be an integer percent from 0 to 100" }
-```
-
----
+| HTTP  | Message                                               |
+| ----- | ----------------------------------------------------- |
+| `400` | `brightness must be an integer percent from 0 to 100` |
+| `500` | `failed to save brightness`                           |
 
 ## POST `/api/reset`
 
-Очищает только Wi-Fi учётные данные (`ssid` и `password` сбрасываются в пустую строку), сохраняет конфигурацию и перезапускает устройство (~750 мс).
-Все остальные настройки (NTP, координаты, яркость и пр.) **не изменяются**.
-
-**Ответ 200:**
+Clears Wi-Fi credentials, keeps application settings, and restarts the device.
 
 ```json
-{ "status": "ok", "message": "Wi-Fi credentials cleared, device restarting" }
+{
+  "status": "ok",
+  "message": "Wi-Fi credentials cleared, device restarting"
+}
 ```
 
----
+If saving the resulting settings state fails, the endpoint returns HTTP `500` with:
+
+```json
+{ "status": "error", "message": "failed to clear Wi-Fi credentials" }
+```
+
+## Web Update API
+
+See [web_update.md](web_update.md) for full details.
+
+### POST `/api/update/firmware`
+
+Uploads `firmware.bin` as raw binary:
+
+```http
+POST /api/update/firmware
+Content-Type: application/octet-stream
+X-Update-Filename: firmware.bin
+```
+
+### POST `/api/update/filesystem`
+
+Uploads `littlefs.bin` as raw binary:
+
+```http
+POST /api/update/filesystem
+Content-Type: application/octet-stream
+X-Update-Filename: littlefs.bin
+```
+
+### POST `/api/update/restart`
+
+Schedules restart after firmware and filesystem uploads:
+
+```json
+{
+  "status": "ok",
+  "restarting": true,
+  "restartScheduled": true,
+  "restartInMs": 1500,
+  "message": "device restarting"
+}
+```
+
+### GET `/api/update`
+
+Returns update status:
+
+```json
+{
+  "status": "ok",
+  "active": false,
+  "error": "",
+  "target": "filesystem",
+  "maxSize": 1507328,
+  "restartPending": false,
+  "restartInMs": 0
+}
+```
 
 ## GET `/metrics`
 
-Метрики в формате **Prometheus text exposition** (`text/plain; version=0.0.4`).
+Returns Prometheus text exposition using content type:
 
-### Группы метрик
+```text
+text/plain; version=0.0.4; charset=utf-8
+```
 
-#### Wi-Fi
+Important metric groups:
 
-| Метрика                              | Тип     | Описание             |
-| ------------------------------------ | ------- | -------------------- |
-| `candle_wifi_connect_attempts_total` | counter | Попытки подключения  |
-| `candle_wifi_connected_total`        | counter | Успешные подключения |
-| `candle_wifi_disconnects_total`      | counter | Разрывы соединения   |
-
-#### HTTP
-
-| Метрика                           | Тип     | Описание            |
-| --------------------------------- | ------- | ------------------- |
-| `candle_http_requests_total`      | counter | Входящих запросов   |
-| `candle_prometheus_scrapes_total` | counter | Запросов `/metrics` |
-
-#### NTP
-
-| Метрика                     | Тип     | Описание                                     |
-| --------------------------- | ------- | -------------------------------------------- |
-| `candle_ntp_syncs_total`    | counter | Успешных синхронизаций                       |
-| `candle_ntp_failures_total` | counter | Ошибок NTP                                   |
-| `candle_ntp_drift_seconds`  | gauge   | Дрейф времени при последней синхронизации, с |
-
-#### I2C / Матрица
-
-| Метрика                                              | Тип     | Описание                                    |
-| ---------------------------------------------------- | ------- | ------------------------------------------- |
-| `candle_i2c_clock_hz`                                | gauge   | Текущая частота I2C, Гц                     |
-| `candle_i2c_clock_fallback_active`                   | gauge   | `1` — активен режим пониженной частоты      |
-| `candle_i2c_current_page`                            | gauge   | Текущая активная страница матрицы (0 или 1) |
-| `candle_i2c_consecutive_errors`                      | gauge   | Последовательных ошибок подряд              |
-| `candle_i2c_max_consecutive_errors`                  | gauge   | Максимум ошибок подряд за всё время         |
-| `candle_i2c_errors_total`                            | counter | Всего ошибок I2C                            |
-| `candle_i2c_last_render_duration_milliseconds`       | gauge   | Длительность последнего рендера кадра, мс   |
-| `candle_i2c_max_render_duration_milliseconds`        | gauge   | Максимальная длительность рендера, мс       |
-| `candle_i2c_bus_bytes_written_total`                 | counter | Байт записано в шину                        |
-| `candle_i2c_frames_rendered_total`                   | counter | Отрендерено кадров                          |
-| `candle_i2c_frames_skipped_total`                    | counter | Пропущено кадров                            |
-| `candle_i2c_last_frame_changed_bytes`                | gauge   | Изменённых байт в последнем кадре           |
-| `candle_i2c_recoveries_total`                        | counter | Попыток восстановления шины                 |
-| `candle_i2c_recovery_failures_total`                 | counter | Неудачных восстановлений                    |
-| `candle_i2c_last_recovery_duration_milliseconds`     | gauge   | Длительность последнего восстановления, мс  |
-| `candle_i2c_stage_attempts_total{stage=...}`         | counter | Попыток по стадии                           |
-| `candle_i2c_stage_success_total{stage=...}`          | counter | Успехов по стадии                           |
-| `candle_i2c_stage_failures_total{stage=...}`         | counter | Ошибок по стадии                            |
-| `candle_i2c_stage_retries_total{stage=...}`          | counter | Повторных попыток по стадии                 |
-| `candle_i2c_end_transmission_errors_total{code=...}` | counter | Ошибок `Wire.endTransmission` по коду       |
-| `candle_i2c_last_error_code`                         | gauge   | Код последней ошибки Wire                   |
-
-Стадии I2C (`stage`): `Init`, `SelectPage`, `WriteChunk`, `WriteFrame`, `FlipPage`, `Recover`.
-
-#### Свет / Яркость
-
-| Метрика             | Тип   | Описание                 |
-| ------------------- | ----- | ------------------------ |
-| `candle_brightness` | gauge | Текущая яркость 0..100 % |
-
-#### Солнечное расписание
-
-| Метрика                                   | Тип     | Описание                                                            |
-| ----------------------------------------- | ------- | ------------------------------------------------------------------- |
-| `candle_sun_mode`                         | gauge   | Текущий режим (0=Day, 1=Civil, 2=Nautical, 3=Astronomical, 4=Night) |
-| `candle_sun_controlled`                   | gauge   | `1` — управление по солнцу включено                                 |
-| `candle_sun_candle_enabled`               | gauge   | `1` — свеча включена по расписанию                                  |
-| `candle_sun_cache_loaded`                 | gauge   | `1` — кэш расписания загружен                                       |
-| `candle_sun_fetch_in_progress`            | gauge   | `1` — идёт обновление расписания                                    |
-| `candle_sun_attempts_today`               | gauge   | Попыток обновить расписание сегодня                                 |
-| `candle_sun_refresh_requests_total`       | counter | Запросов обновления расписания                                      |
-| `candle_sun_updates_total`                | counter | Успешных обновлений расписания                                      |
-| `candle_sun_update_failures_total`        | counter | Ошибок обновления расписания                                        |
-| `candle_sun_no_schedule_forced_off_total` | counter | Принудительных выключений из-за отсутствия расписания               |
-| `candle_sun_schedule_updated_at`          | gauge   | Unix timestamp последнего обновления расписания                     |
-| `candle_sun_sunrise_minutes`              | gauge   | Восход — минута суток                                               |
-| `candle_sun_sunset_minutes`               | gauge   | Закат — минута суток                                                |
-
----
-
-## Статические файлы
-
-Все файлы из корня LittleFS раздаются напрямую: `/style.css`, `/app.js`, `/anim.html`, `/sun.html` и т. д.
+| Metric                                     | Type    | Description                                                                                                      |
+| ------------------------------------------ | ------- | ---------------------------------------------------------------------------------------------------------------- |
+| `candle_up`                                | gauge   | `1` while firmware is running.                                                                                   |
+| `candle_device_info`                       | gauge   | Device metadata labels including hostname, firmware version, build commit, build date, and IP.                   |
+| `candle_uptime_seconds`                    | gauge   | Seconds since boot.                                                                                              |
+| `candle_heap_free_bytes`                   | gauge   | Currently free heap.                                                                                             |
+| `candle_heap_min_free_bytes`               | gauge   | Minimum free heap seen since boot.                                                                               |
+| `candle_current_unixtime`                  | gauge   | Current Unix timestamp.                                                                                          |
+| `candle_wifi_connected`                    | gauge   | Wi-Fi state.                                                                                                     |
+| `candle_wifi_rssi_dbm`                     | gauge   | Wi-Fi RSSI or `-127` when disconnected.                                                                          |
+| `candle_wifi_connect_attempts_total`       | counter | Wi-Fi connection attempts.                                                                                       |
+| `candle_wifi_connect_success_total`        | counter | Successful Wi-Fi connections.                                                                                    |
+| `candle_wifi_disconnects_total`            | counter | Wi-Fi disconnect events.                                                                                         |
+| `candle_http_requests_total`               | counter | Dynamic HTTP requests handled.                                                                                   |
+| `candle_prometheus_scrapes_total`          | counter | `/metrics` scrapes.                                                                                              |
+| `candle_ntp_drift_seconds`                 | gauge   | Clock correction on last successful NTP sync.                                                                    |
+| `candle_ntp_last_success_unixtime`         | gauge   | Last successful NTP sync timestamp.                                                                              |
+| `candle_ntp_sync_failures_total`           | counter | Failed NTP sync attempts.                                                                                        |
+| `candle_ota_active`                        | gauge   | OTA upload/write in progress.                                                                                    |
+| `candle_ota_success_total`                 | counter | Successful OTA uploads.                                                                                          |
+| `candle_ota_failures_total`                | counter | Failed OTA uploads.                                                                                              |
+| `candle_i2c_brightness`                    | gauge   | Current LED brightness in range `0..255`.                                                                        |
+| `candle_sun_control_mode`                  | gauge   | Brightness control source: `0=manual`, `1=sun`.                                                                  |
+| `candle_sun_current_mode`                  | gauge   | Current sun mode code: `0=unknown`, `1=day`, `2=civil`, `3=nautical`, `4=astronomical`, `5=night`, `6=disabled`. |
+| `candle_sun_current_mode_info`             | gauge   | Current sun mode as labels.                                                                                      |
+| `candle_sun_target_brightness`             | gauge   | Brightness requested by sun/time/manual control.                                                                 |
+| `candle_sun_*_minutes`                     | gauge   | Sunrise, sunset, and twilight minutes from local midnight.                                                       |
+| `candle_sun_refresh_requests_total`        | counter | Solar schedule recalculation requests.                                                                           |
+| `candle_sun_update_success_total`          | counter | Successful solar schedule recalculations.                                                                        |
+| `candle_sun_update_failures_total`         | counter | Failed solar schedule recalculations.                                                                            |
+| `candle_sun_no_schedule_forced_off_total`  | counter | Times output was forced off because no valid solar schedule was available.                                       |
+| `candle_i2c_frames_rendered_total`         | counter | Frames written to the LED driver.                                                                                |
+| `candle_i2c_frames_skipped_total`          | counter | Frames skipped because data was unchanged.                                                                       |
+| `candle_i2c_errors_total`                  | counter | Animation frame pushes that failed and triggered error handling.                                                 |
+| `candle_i2c_recoveries_total`              | counter | Successful I2C recoveries.                                                                                       |
+| `candle_i2c_recovery_failures_total`       | counter | Failed I2C recoveries.                                                                                           |
+| `candle_i2c_clock_hz`                      | gauge   | Current I2C bus clock.                                                                                           |
+| `candle_i2c_clock_fallback_active`         | gauge   | `1` when fallback slow-clock mode is active.                                                                     |
+| `candle_i2c_clock_fallbacks_total`         | counter | Clock fallback activations.                                                                                      |
+| `candle_i2c_clock_restores_total`          | counter | Clock restorations after stable transfers.                                                                       |
+| `candle_i2c_stage_*`                       | counter | I2C operation attempts, successes, failures, retries, and bytes by stage.                                        |
+| `candle_i2c_end_transmission_errors_total` | counter | `Wire.endTransmission()` errors grouped by code.                                                                 |

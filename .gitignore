@@ -1,10 +1,16 @@
-.pio
-.vscode/c_cpp_properties.json
-.vscode/extensions.json
-.vscode/launch.json
-*.log
-doc/arch/*.zip
-doc/arch/*.7z
+.pio/*
+!.pio/build/
+.pio/build/*
+!.pio/build/esp32s3zero/
+.pio/build/esp32s3zero/*
+!.pio/build/esp32s3zero/bootloader.bin
+!.pio/build/esp32s3zero/firmware.bin
+!.pio/build/esp32s3zero/littlefs.bin
+!.pio/build/esp32s3zero/partitions.bin
+!.pio/build/esp32s3zero/partitions.bin
 
-src/i2c.cpp
+.vscode/*
+!.vscode/settings.json
+
 include/i2c.h
+src/i2c.cpp

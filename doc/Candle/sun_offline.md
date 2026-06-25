@@ -1,172 +1,237 @@
-# Offline Solar Calculation Formulas (NOAA)
+# Offline Solar Calculations
 
-Документ описывает формулы, используемые в `sun_offline` для расчета положения Солнца и событий дня (восход/закат/сумерки) без внешнего API.
+The firmware calculates sun position and local-day events on the device. It does not call an external sunrise/sunset API.
 
-## 1) Входные данные
+The implementation follows the NOAA solar calculation model and is used by:
 
-- `t_utc` - Unix time в секундах (UTC).
-- `lat` - широта в градусах (`-90..90`).
-- `lon` - долгота в градусах (`-180..180`, восток `+`).
-- `tz` - смещение локального времени от UTC в минутах.
+- automatic sun-based candle mode;
+- `/api/sun`;
+- sun position visualization;
+- Prometheus sun metrics.
 
-## 2) Преобразование времени
+Firmware `1.5.x` also supports a fixed time schedule mode. That mode uses the same valid local time source but does not use solar calculations.
 
-Юлианский день:
+## Inputs
 
-$$
-JD = \frac{t_{utc}}{86400} + 2440587.5
-$$
+| Input   | Description                                           |
+| ------- | ----------------------------------------------------- |
+| `t_utc` | Unix timestamp in UTC seconds.                        |
+| `lat`   | Latitude in degrees, `-90..90`.                       |
+| `lon`   | Longitude in degrees, `-180..180`, east positive.     |
+| `tz`    | Local UTC offset in minutes for the requested moment. |
 
-Юлианские столетия от эпохи J2000:
+Coordinates come from `settings.json` unless `/api/sun` query parameters override them.
 
-$$
-T = \frac{JD - 2451545.0}{36525}
-$$
+## Julian Time
 
-## 3) Промежуточные солнечные параметры
+Julian day:
 
-Средняя долгота Солнца:
+```text
+JD = t_utc / 86400 + 2440587.5
+```
 
-$$
-L_0 = 280.46646 + T(36000.76983 + 0.0003032T)
-$$
+Julian centuries from J2000:
 
-Средняя аномалия Солнца:
+```text
+T = (JD - 2451545.0) / 36525
+```
 
-$$
-M = 357.52911 + T(35999.05029 - 0.0001537T)
-$$
+## Solar Parameters
 
-Эксцентриситет орбиты Земли:
+Mean longitude of the Sun:
 
-$$
-e = 0.016708634 - T(0.000042037 + 0.0000001267T)
-$$
+```text
+L0 = 280.46646 + T * (36000.76983 + 0.0003032 * T)
+```
 
-Уравнение центра Солнца:
+Mean anomaly:
 
-$$
-C = \sin(M)(1.914602 - T(0.004817 + 0.000014T)) + \sin(2M)(0.019993 - 0.000101T) + 0.000289\sin(3M)
-$$
+```text
+M = 357.52911 + T * (35999.05029 - 0.0001537 * T)
+```
 
-Истинная и видимая долгота:
+Earth orbit eccentricity:
 
-$$
-\lambda_{true} = L_0 + C
-$$
+```text
+e = 0.016708634 - T * (0.000042037 + 0.0000001267 * T)
+```
 
-$$
-\Omega = 125.04 - 1934.136T
-$$
+Equation of center:
 
-$$
-\lambda = \lambda_{true} - 0.00569 - 0.00478\sin(\Omega)
-$$
+```text
+C = sin(M) * (1.914602 - T * (0.004817 + 0.000014 * T))
+  + sin(2M) * (0.019993 - 0.000101 * T)
+  + 0.000289 * sin(3M)
+```
 
-Наклон эклиптики:
+True and apparent longitude:
 
-$$
-\varepsilon_0 = 23 + \frac{26 + \frac{21.448 - T(46.815 + T(0.00059 - 0.001813T))}{60}}{60}
-$$
+```text
+lambda_true = L0 + C
+Omega = 125.04 - 1934.136 * T
+lambda = lambda_true - 0.00569 - 0.00478 * sin(Omega)
+```
 
-$$
-\varepsilon = \varepsilon_0 + 0.00256\cos(\Omega)
-$$
+Mean and corrected obliquity:
 
-Склонение Солнца:
+```text
+epsilon0 = 23 + (26 + (21.448 - T * (46.815 + T * (0.00059 - 0.001813 * T))) / 60) / 60
+epsilon = epsilon0 + 0.00256 * cos(Omega)
+```
 
-$$
-\delta = \arcsin(\sin\varepsilon \sin\lambda)
-$$
+Declination:
 
-Уравнение времени (`EqTime`, минуты):
+```text
+delta = asin(sin(epsilon) * sin(lambda))
+```
 
-$$
-y = \tan^2\left(\frac{\varepsilon}{2}\right)
-$$
+Equation of time in minutes:
 
-$$
-EqTime = 4\cdot\text{deg}\left(y\sin(2L_0) - 2e\sin(M) + 4ey\sin(M)\cos(2L_0) - \frac{y^2}{2}\sin(4L_0) - 1.25e^2\sin(2M)\right)
-$$
+```text
+y = tan(epsilon / 2)^2
 
-## 4) Положение Солнца в момент времени
+EqTime = 4 * deg(
+  y * sin(2L0)
+  - 2e * sin(M)
+  + 4e * y * sin(M) * cos(2L0)
+  - 0.5 * y^2 * sin(4L0)
+  - 1.25 * e^2 * sin(2M)
+)
+```
 
-Истинное солнечное время (мин):
+## Current Sun Position
 
-$$
-TST = utcMinutes + EqTime + 4\cdot lon
-$$
+True solar time in minutes:
 
-Часовой угол:
+```text
+TST = utcMinutes + EqTime + 4 * lon
+```
 
-$$
-H = \frac{TST}{4} - 180
-$$
+Hour angle:
 
-Зенитный угол:
+```text
+H = TST / 4 - 180
+```
 
-$$
-\cos Z = \sin(lat)\sin(\delta) + \cos(lat)\cos(\delta)\cos(H)
-$$
+Zenith angle:
 
-$$
+```text
+cos(Z) = sin(lat) * sin(delta) + cos(lat) * cos(delta) * cos(H)
 elevation = 90 - Z
-$$
+```
 
-Азимут (как в коде, диапазон `0..360`):
+Azimuth in range `0..360`:
 
-$$
-azimuth = \operatorname{norm360}\left(\operatorname{atan2}(\sin H,\ \cos H\sin lat - \tan\delta\cos lat) + 180\right)
-$$
+```text
+azimuth = norm360(atan2(sin(H), cos(H) * sin(lat) - tan(delta) * cos(lat)) + 180)
+```
 
-## 5) Восход, закат, сумерки
+## Sunrise, Sunset, and Twilight
 
-Для заданного порога зенитного угла `Z0`:
+For a requested zenith threshold `Z0`:
 
-$$
-\cos H_0 = \frac{\cos Z_0}{\cos(lat)\cos(\delta)} - \tan(lat)\tan(\delta)
-$$
+```text
+cos(H0) = cos(Z0) / (cos(lat) * cos(delta)) - tan(lat) * tan(delta)
+```
 
-- если `cos(H0) > 1`, событие не наступает (Солнце всегда ниже порога);
-- если `cos(H0) < -1`, событие не наступает (Солнце всегда выше порога);
-- иначе `H0 = arccos(cos(H0))`.
+Cases:
 
-Время утренней и вечерней границы (локальные минуты):
+- `cos(H0) > 1`: event does not occur because the Sun is always below the threshold.
+- `cos(H0) < -1`: event does not occur because the Sun is always above the threshold.
+- otherwise `H0 = acos(cos(H0))`.
 
-$$
-t_{morning} = 720 - 4(lon + H_0) - EqTime + tz
-$$
+Local event minutes:
 
-$$
-t_{evening} = 720 - 4(lon - H_0) - EqTime + tz
-$$
+```text
+t_morning = 720 - 4 * (lon + H0) - EqTime + tz
+t_evening = 720 - 4 * (lon - H0) - EqTime + tz
+```
 
-Нормализация в диапазон `0..1439`:
+Normalized minute of day:
 
-$$
-minute = ((round(t) \bmod 1440) + 1440) \bmod 1440
-$$
+```text
+minute = ((round(t) mod 1440) + 1440) mod 1440
+```
 
-Используемые пороги `Z0`:
+Thresholds:
 
-- Официальный восход/закат: `90.833` deg
-- Гражданские сумерки: `96` deg
-- Навигационные сумерки: `102` deg
-- Астрономические сумерки: `108` deg
+| Event                 | Zenith       |
+| --------------------- | ------------ |
+| Sunrise / sunset      | `90.833` deg |
+| Civil twilight        | `96` deg     |
+| Nautical twilight     | `102` deg    |
+| Astronomical twilight | `108` deg    |
 
-## 6) Режимы дня по высоте Солнца
+## Sun Modes
 
-- `day`: `elevation >= 0`
-- `civil`: `-6 <= elevation < 0`
-- `nautical`: `-12 <= elevation < -6`
-- `astronomical`: `-18 <= elevation < -12`
-- `night`: `elevation < -18`
+Current sun mode for `/api/date`, `/api/sun`, metrics, and the web UI is classified from the current calculated elevation when valid time is available. This avoids event-schedule edge cases when the Sun does not cross a lower twilight boundary during the local day.
 
-## 7) Полярные случаи
+| Mode           | Elevation or state                                          |
+| -------------- | ----------------------------------------------------------- |
+| `day`          | `elevation >= 0`                                            |
+| `civil`        | `-6 <= elevation < 0`                                       |
+| `nautical`     | `-12 <= elevation < -6`                                     |
+| `astronomical` | `-18 <= elevation < -12`                                    |
+| `night`        | `elevation < -18`                                           |
+| `time`         | Fixed time schedule mode is enabled and valid time exists.  |
+| `manual`       | Sun mode and fixed time schedule mode are both disabled.    |
+| `waiting_time` | Automatic mode is enabled but valid time is not available.  |
+| `unknown`      | A schedule or position calculation could not be completed.  |
 
-Для официального порога `90.833`:
+Brightness in sun mode:
 
-- `is_polar_day = true`, если Солнце не опускается ниже порога в течение суток;
-- `is_polar_night = true`, если Солнце не поднимается выше порога в течение суток.
+| Solar mode | Target brightness |
+| ---------- | ----------------- |
+| `day` | `0` |
+| `civil` | configured brightness reduced by 10 percent |
+| `nautical` | configured brightness reduced by 20 percent |
+| `astronomical` | configured brightness reduced by 30 percent |
+| `night` | configured brightness |
 
-В этих случаях режим выбирается напрямую (`day` или `night`) без интервалов восхода/заката.
+## Fixed Time Schedule
+
+The fixed schedule is stored in `settings.json` under `timeSchedule` and is mutually exclusive with sun mode.
+
+| Field | Description |
+| ----- | ----------- |
+| `timeSchedule.enabled` | Enables schedule mode. |
+| `timeSchedule.onMinute` | Start minute from local midnight, `0..1439`. |
+| `timeSchedule.offMinute` | End minute from local midnight, `0..1439`. |
+
+Schedule rules:
+
+- If `onMinute == offMinute`, the schedule is always on.
+- If `onMinute < offMinute`, the candle is on in `[onMinute, offMinute)`.
+- If `onMinute > offMinute`, the interval crosses midnight.
+- Schedule mode requires valid time; before that, firmware falls back to the manual candle state and reports `waiting_time`.
+
+## Daily Path for Canvas
+
+The `/api/sun` response includes `path`, a list of points used by `sun.html`. The path is calculated once per local day and cached for up to 30 hours for the same date, coordinates, and timezone offset.
+
+- base sampling interval: 10 minutes;
+- nominal base point count: 144 points per day;
+- each point includes `minute`, `azimuth`, `elevation`, and elevation-derived `mode`;
+- exact threshold crossing points are inserted for `0`, `-6`, `-12`, and `-18` degrees when crossings exist between adjacent samples;
+- `pathMinElevation` and `pathMaxElevation` summarize the visible daily range.
+
+The frontend draws the curve directly from these points and derives twilight ranges from the same crossing points, so the text values match the canvas boundaries.
+
+Display bands:
+
+| Band                  | Elevation range |
+| --------------------- | --------------- |
+| Day                   | `0..90`         |
+| Sunset twilight band  | `-6..0`         |
+| Nautical twilight     | `-12..-6`       |
+| Astronomical twilight | `-18..-12`      |
+| Night                 | `< -18`         |
+
+## Polar Cases
+
+For the official sunrise/sunset threshold:
+
+- `isPolarDay = true` when the Sun never drops below the threshold during the local day.
+- `isPolarNight = true` when the Sun never rises above the threshold during the local day.
+
+In these cases the firmware chooses the day or night mode directly and does not rely on missing sunrise/sunset event times.

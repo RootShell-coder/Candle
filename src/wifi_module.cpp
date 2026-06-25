@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <DNSServer.h>
+#include <Preferences.h>
 #include <WiFi.h>
 #include <esp_netif.h>
 
@@ -11,23 +12,24 @@ namespace {
 constexpr uint32_t kWifiRetryIntervalMs = 10000;
 constexpr uint32_t kWifiConnectTimeoutMs = 15000;
 constexpr uint16_t kCaptivePortalDnsPort = 53;
+constexpr const char* kSetupApSsid = "candle-setup";
+constexpr const char* kSetupApPassword = "candle1234";
+constexpr const char* kPrefsNamespace = "wifi";
+constexpr const char* kPrefsSsidKey = "ssid";
+constexpr const char* kPrefsPasswordKey = "password";
+
 const IPAddress kCaptivePortalIp(192, 168, 4, 1);
 const IPAddress kCaptivePortalGateway(192, 168, 4, 1);
 const IPAddress kCaptivePortalSubnet(255, 255, 255, 0);
 
 DNSServer s_dnsServer;
+WiFiCredentials s_credentials {};
 uint32_t s_lastConnectAttemptMs = 0;
 bool s_connectInProgress = false;
 bool s_connectionLogged = false;
 bool s_wasConnected = false;
 bool s_captivePortalActive = false;
 
-// Возвращает hostname устройства или безопасное имя по умолчанию.
-const char* wifi_hostname(const Config& cfg) {
-  return strlen(cfg.wifi.devname) != 0 ? cfg.wifi.devname : "candle_light";
-}
-
-// Применяет hostname одновременно через Arduino API и напрямую в netif.
 void wifi_apply_hostname(const char* hostname, bool applySta, bool applyAp) {
   if (hostname == nullptr || hostname[0] == '\0') {
     return;
@@ -48,8 +50,32 @@ void wifi_apply_hostname(const char* hostname, bool applySta, bool applyAp) {
   }
 }
 
-// Останавливает captive portal, если он сейчас активен.
-void wifi_stop_captive_portal() {
+const char* wifi_hostname() {
+  static char hostname[32] = "candle-light";
+  const Config cfg = getConfig();
+  strlcpy(hostname, cfg.devname[0] != '\0' ? cfg.devname : "candle-light", sizeof(hostname));
+  return hostname;
+}
+
+bool load_credentials_from_nvs(WiFiCredentials& credentials) {
+  memset(&credentials, 0, sizeof(credentials));
+
+  Preferences prefs;
+  if (!prefs.begin(kPrefsNamespace, true)) {
+    Serial.println("[wifi] failed to open Wi-Fi preferences for reading");
+    return false;
+  }
+
+  const String ssid = prefs.getString(kPrefsSsidKey, "");
+  const String password = prefs.getString(kPrefsPasswordKey, "");
+  prefs.end();
+
+  ssid.toCharArray(credentials.ssid, sizeof(credentials.ssid));
+  password.toCharArray(credentials.password, sizeof(credentials.password));
+  return credentials.ssid[0] != '\0';
+}
+
+void wifi_stop_setup_ap() {
   if (!s_captivePortalActive) {
     return;
   }
@@ -57,70 +83,57 @@ void wifi_stop_captive_portal() {
   s_dnsServer.stop();
   WiFi.softAPdisconnect(true);
   s_captivePortalActive = false;
-  Serial.println("[wifi] captive portal stopped");
+  Serial.println("[wifi] setup AP stopped");
 }
 
-// Запускает точку доступа и DNS-перенаправление для первичной настройки Wi‑Fi.
-bool wifi_start_captive_portal(const Config& cfg) {
+bool wifi_start_setup_ap() {
   if (s_captivePortalActive) {
     s_dnsServer.processNextRequest();
     return true;
   }
 
-  const char* apName = wifi_hostname(cfg);
-
-  WiFi.disconnect(false, false);
   WiFi.mode(WIFI_AP_STA);
-  wifi_apply_hostname(apName, true, true);
+  wifi_apply_hostname(wifi_hostname(), true, true);
   WiFi.setAutoReconnect(true);
   WiFi.persistent(false);
 
   if (!WiFi.softAPConfig(kCaptivePortalIp, kCaptivePortalGateway, kCaptivePortalSubnet)) {
-    Serial.println("[wifi] captive portal IP config failed");
+    Serial.println("[wifi] setup AP IP config failed");
   }
 
-  if (!WiFi.softAP(apName)) {
-    Serial.printf("[wifi] failed to start captive portal '%s'\n", apName);
+  if (!WiFi.softAP(kSetupApSsid, kSetupApPassword)) {
+    Serial.printf("[wifi] failed to start setup AP '%s'\n", kSetupApSsid);
     return false;
   }
 
   s_dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
   s_dnsServer.start(kCaptivePortalDnsPort, "*", WiFi.softAPIP());
-
-  s_lastConnectAttemptMs = millis();
-  s_connectInProgress = false;
-  s_connectionLogged = false;
-  s_wasConnected = false;
   s_captivePortalActive = true;
 
   Serial.printf(
-      "[wifi] SSID/password empty, captive portal '%s' started at %s\n",
-      apName,
+      "[wifi] setup AP '%s' started at %s\n",
+      kSetupApSsid,
       WiFi.softAPIP().toString().c_str());
 
   return true;
 }
 
-// Начинает новое подключение к сохранённой Wi‑Fi-сети.
-void wifi_begin_connection(const Config& cfg) {
-  wifi_stop_captive_portal();
-
-  WiFi.mode(WIFI_STA);
-  wifi_apply_hostname(wifi_hostname(cfg), true, false);
+void wifi_begin_connection(const WiFiCredentials& credentials) {
+  WiFi.mode(s_captivePortalActive ? WIFI_AP_STA : WIFI_STA);
+  wifi_apply_hostname(wifi_hostname(), true, s_captivePortalActive);
   WiFi.setAutoReconnect(true);
   WiFi.persistent(false);
-  WiFi.begin(cfg.wifi.ssid, cfg.wifi.password);
+  WiFi.begin(credentials.ssid, credentials.password);
 
   metrics_record_wifi_connect_attempt();
   s_lastConnectAttemptMs = millis();
   s_connectInProgress = true;
   s_connectionLogged = false;
 
-  Serial.printf("[wifi] connecting to '%s'...\n", cfg.wifi.ssid);
+  Serial.printf("[wifi] connecting to STA '%s'...\n", credentials.ssid);
 }
 }  // namespace
 
-// Обрабатывает DNS captive portal и периодический reconnect.
 void wifi_handle_reconnect() {
   if (s_captivePortalActive) {
     s_dnsServer.processNextRequest();
@@ -129,21 +142,66 @@ void wifi_handle_reconnect() {
   (void)wifi_connect();
 }
 
-// Возвращает флаг активности captive portal.
 bool wifi_is_captive_portal_active() {
   return s_captivePortalActive;
 }
 
-// Поддерживает актуальное состояние Wi‑Fi: портал, подключение и повторные попытки.
-bool wifi_connect() {
-  const Config& cfg = getConfig();
+bool wifi_has_credentials() {
+  WiFiCredentials credentials {};
+  return load_credentials_from_nvs(credentials);
+}
 
-  if (strlen(cfg.wifi.ssid) == 0) {
-    return wifi_start_captive_portal(cfg);
+bool wifi_get_credentials(WiFiCredentials& credentials) {
+  return load_credentials_from_nvs(credentials);
+}
+
+bool wifi_save_credentials(const char* ssid, const char* password) {
+  if (ssid == nullptr || ssid[0] == '\0') {
+    wifi_clear_credentials();
+    return true;
   }
 
-  if (s_captivePortalActive) {
-    wifi_stop_captive_portal();
+  Preferences prefs;
+  if (!prefs.begin(kPrefsNamespace, false)) {
+    Serial.println("[wifi] failed to open Wi-Fi preferences for writing");
+    return false;
+  }
+
+  const size_t ssidWritten = prefs.putString(kPrefsSsidKey, ssid);
+  const size_t passwordWritten = prefs.putString(kPrefsPasswordKey, password != nullptr ? password : "");
+  prefs.end();
+
+  (void)passwordWritten;
+  const bool ok = ssidWritten > 0;
+  if (ok) {
+    strlcpy(s_credentials.ssid, ssid, sizeof(s_credentials.ssid));
+    strlcpy(s_credentials.password, password != nullptr ? password : "", sizeof(s_credentials.password));
+    s_connectInProgress = false;
+    s_connectionLogged = false;
+  }
+
+  return ok;
+}
+
+void wifi_clear_credentials() {
+  Preferences prefs;
+  if (prefs.begin(kPrefsNamespace, false)) {
+    prefs.remove(kPrefsSsidKey);
+    prefs.remove(kPrefsPasswordKey);
+    prefs.end();
+  }
+
+  memset(&s_credentials, 0, sizeof(s_credentials));
+  WiFi.disconnect(false, false);
+  s_connectInProgress = false;
+  s_connectionLogged = false;
+  s_wasConnected = false;
+}
+
+bool wifi_connect() {
+  if (!load_credentials_from_nvs(s_credentials)) {
+    wifi_start_setup_ap();
+    return false;
   }
 
   const wl_status_t status = WiFi.status();
@@ -160,6 +218,13 @@ bool wifi_connect() {
       metrics_record_wifi_connected();
       s_connectionLogged = true;
     }
+
+    if (s_captivePortalActive) {
+      wifi_stop_setup_ap();
+      WiFi.mode(WIFI_STA);
+      wifi_apply_hostname(wifi_hostname(), true, false);
+    }
+
     s_wasConnected = true;
     s_connectInProgress = false;
     return true;
@@ -167,12 +232,13 @@ bool wifi_connect() {
 
   const uint32_t now = millis();
   if (!s_connectInProgress) {
-    wifi_begin_connection(cfg);
+    wifi_begin_connection(s_credentials);
     return false;
   }
 
   if ((now - s_lastConnectAttemptMs) >= kWifiConnectTimeoutMs) {
-    Serial.println("[wifi] connect timeout, will retry without reboot");
+    Serial.println("[wifi] STA connect timeout, setup AP will stay available while retrying");
+    wifi_start_setup_ap();
     WiFi.disconnect(false, false);
     s_connectInProgress = false;
     s_lastConnectAttemptMs = now;

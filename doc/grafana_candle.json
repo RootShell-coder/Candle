@@ -28,431 +28,26 @@
   "links": [],
   "panels": [
     {
+      "collapsed": false,
       "datasource": {
         "type": "prometheus",
-        "uid": "efjej6af0v0g0e"
-      },
-      "description": "Current lighting source mode.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [
-            {
-              "options": {
-                "0": {
-                  "text": "Manual"
-                },
-                "1": {
-                  "text": "Sun"
-                }
-              },
-              "type": "value"
-            }
-          ],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "blue",
-                "value": null
-              },
-              {
-                "color": "green",
-                "value": 1
-              }
-            ]
-          }
-        },
-        "overrides": []
+        "uid": "$datasource"
       },
       "gridPos": {
-        "h": 3,
-        "w": 2,
+        "h": 1,
+        "w": 24,
         "x": 0,
         "y": 0
       },
-      "id": 4,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "11.5.2",
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "candle_sun_control_mode{job=\"candle-light\"}",
-          "legendFormat": "",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Control Mode",
-      "transparent": true,
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "uid": "efjej6af0v0g0e"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 1
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 2,
-        "x": 2,
-        "y": 0
-      },
-      "id": 19,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "11.5.2",
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "candle_sun_last_failure_reason_code",
-          "legendFormat": "__auto",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Api SunPosition ",
-      "transparent": true,
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "uid": "efjej6af0v0g0e"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 2,
-        "x": 4,
-        "y": 0
-      },
-      "id": 18,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "11.5.2",
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "candle_ntp_drift_seconds",
-          "legendFormat": "__auto",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "drift time",
-      "transparent": true,
-      "type": "stat"
+      "id": 1,
+      "panels": [],
+      "title": "System",
+      "type": "row"
     },
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "efjej6af0v0g0e"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          },
-          "unit": "dtdurations"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 2,
-        "x": 6,
-        "y": 0
-      },
-      "id": 17,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "11.5.2",
-      "targets": [
-        {
-          "disableTextWrap": false,
-          "editorMode": "code",
-          "exemplar": false,
-          "expr": "candle_uptime_seconds",
-          "format": "time_series",
-          "fullMetaSearch": false,
-          "includeNullMetadata": true,
-          "instant": true,
-          "legendFormat": "__auto",
-          "range": false,
-          "refId": "A",
-          "useBackend": false
-        }
-      ],
-      "title": "Uptime",
-      "transparent": true,
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "efjej6af0v0g0e"
-      },
-      "description": "Heap free memory",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 131072
-              }
-            ]
-          }
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Heap Free"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "bytes"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Heap Min"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "bytes"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Uptime"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "s"
-              },
-              {
-                "id": "custom.axisPlacement",
-                "value": "right"
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 11,
-        "x": 13,
-        "y": 0
-      },
-      "id": 6,
-      "options": {
-        "legend": {
-          "calcs": [
-            "lastNotNull",
-            "min",
-            "max"
-          ],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "multi",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "11.5.2",
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "candle_heap_free_bytes{job=\"candle-light\"}",
-          "legendFormat": "Heap Free",
-          "range": true,
-          "refId": "A"
-        },
-        {
-          "editorMode": "code",
-          "expr": "candle_heap_min_free_bytes{job=\"candle-light\"}",
-          "legendFormat": "Heap Min",
-          "range": true,
-          "refId": "B"
-        }
-      ],
-      "title": "Heap",
-      "transparent": true,
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "efjej6af0v0g0e"
+        "uid": "$datasource"
       },
       "description": "1 when firmware responds to Prometheus scrapes.",
       "fieldConfig": {
@@ -462,6 +57,7 @@
           },
           "mappings": [
             {
+              "type": "value",
               "options": {
                 "0": {
                   "text": "Down"
@@ -469,8 +65,7 @@
                 "1": {
                   "text": "Up"
                 }
-              },
-              "type": "value"
+              }
             }
           ],
           "thresholds": {
@@ -491,11 +86,11 @@
       },
       "gridPos": {
         "h": 3,
-        "w": 2,
+        "w": 3,
         "x": 0,
-        "y": 3
+        "y": 1
       },
-      "id": 1,
+      "id": 2,
       "options": {
         "colorMode": "background",
         "graphMode": "none",
@@ -516,10 +111,15 @@
       "pluginVersion": "11.5.2",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
           "editorMode": "code",
-          "expr": "candle_up{job=\"candle-light\"}",
+          "expr": "candle_up{job=\"$job\"}",
           "legendFormat": "",
-          "range": true,
+          "range": false,
+          "instant": true,
           "refId": "A"
         }
       ],
@@ -530,9 +130,9 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "efjej6af0v0g0e"
+        "uid": "$datasource"
       },
-      "description": "OTA update state.",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -540,26 +140,26 @@
           },
           "mappings": [
             {
+              "type": "value",
               "options": {
                 "0": {
-                  "text": "Idle"
+                  "text": "Offline"
                 },
                 "1": {
-                  "text": "Running"
+                  "text": "Connected"
                 }
-              },
-              "type": "value"
+              }
             }
           ],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "red",
                 "value": null
               },
               {
-                "color": "orange",
+                "color": "green",
                 "value": 1
               }
             ]
@@ -569,9 +169,9 @@
       },
       "gridPos": {
         "h": 3,
-        "w": 2,
-        "x": 2,
-        "y": 3
+        "w": 3,
+        "x": 3,
+        "y": 1
       },
       "id": 3,
       "options": {
@@ -594,23 +194,28 @@
       "pluginVersion": "11.5.2",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
           "editorMode": "code",
-          "expr": "candle_ota_active{job=\"candle-light\"}",
+          "expr": "candle_wifi_connected{job=\"$job\"}",
           "legendFormat": "",
-          "range": true,
+          "range": false,
+          "instant": true,
           "refId": "A"
         }
       ],
-      "title": "OTA",
+      "title": "Wi-Fi",
       "transparent": true,
       "type": "stat"
     },
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "efjej6af0v0g0e"
+        "uid": "$datasource"
       },
-      "description": "Wi-Fi link state.",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -618,26 +223,26 @@
           },
           "mappings": [
             {
+              "type": "value",
               "options": {
                 "0": {
-                  "text": "Offline"
+                  "text": "Off"
                 },
                 "1": {
-                  "text": "Connected"
+                  "text": "On"
                 }
-              },
-              "type": "value"
+              }
             }
           ],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "red",
+                "color": "green",
                 "value": null
               },
               {
-                "color": "green",
+                "color": "orange",
                 "value": 1
               }
             ]
@@ -647,13 +252,13 @@
       },
       "gridPos": {
         "h": 3,
-        "w": 4,
-        "x": 4,
-        "y": 3
+        "w": 3,
+        "x": 6,
+        "y": 1
       },
-      "id": 2,
+      "id": 4,
       "options": {
-        "colorMode": "none",
+        "colorMode": "background",
         "graphMode": "none",
         "justifyMode": "center",
         "orientation": "auto",
@@ -672,83 +277,60 @@
       "pluginVersion": "11.5.2",
       "targets": [
         {
-          "editorMode": "code",
-          "expr": "candle_wifi_connected{job=\"candle-light\"}",
-          "legendFormat": "",
-          "range": true,
-          "refId": "A"
-        },
-        {
           "datasource": {
             "type": "prometheus",
-            "uid": "efjej6af0v0g0e"
+            "uid": "$datasource"
           },
-          "expr": "",
-          "hide": false,
-          "instant": false,
-          "range": true,
-          "refId": "B"
+          "editorMode": "code",
+          "expr": "candle_ota_active{job=\"$job\"}",
+          "legendFormat": "",
+          "range": false,
+          "instant": true,
+          "refId": "A"
         }
       ],
-      "title": "Wi-Fi",
+      "title": "OTA Active",
       "transparent": true,
       "type": "stat"
     },
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "efjej6af0v0g0e"
+        "uid": "$datasource"
       },
-      "description": "Brightness now vs target from sun logic.",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "thresholds"
           },
           "mappings": [],
-          "max": 255,
-          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green",
                 "value": null
-              },
-              {
-                "color": "orange",
-                "value": 180
-              },
-              {
-                "color": "red",
-                "value": 230
               }
             ]
           },
-          "unit": "none"
+          "unit": "s"
         },
         "overrides": []
       },
       "gridPos": {
         "h": 3,
-        "w": 13,
-        "x": 0,
-        "y": 6
+        "w": 3,
+        "x": 9,
+        "y": 1
       },
       "id": 5,
       "options": {
-        "displayMode": "lcd",
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": false
-        },
-        "maxVizHeight": 300,
-        "minVizHeight": 10,
-        "minVizWidth": 0,
-        "namePlacement": "auto",
-        "orientation": "horizontal",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -756,74 +338,39 @@
           "fields": "",
           "values": false
         },
-        "showUnfilled": true,
-        "sizing": "auto",
-        "valueMode": "color"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
       "pluginVersion": "11.5.2",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
           "editorMode": "code",
-          "expr": "candle_i2c_brightness{job=\"candle-light\"}",
-          "legendFormat": "Current",
-          "range": true,
+          "expr": "candle_uptime_seconds{job=\"$job\"}",
+          "legendFormat": "",
+          "range": false,
+          "instant": true,
           "refId": "A"
-        },
-        {
-          "editorMode": "code",
-          "expr": "candle_sun_target_brightness{job=\"candle-light\"}",
-          "legendFormat": "Target",
-          "range": true,
-          "refId": "B"
         }
       ],
-      "title": "Brightness",
+      "title": "Uptime",
       "transparent": true,
-      "type": "bargauge"
+      "type": "stat"
     },
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "efjej6af0v0g0e"
+        "uid": "$datasource"
       },
-      "description": "Render performance and frame change activity.",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
+            "mode": "thresholds"
           },
           "mappings": [],
           "thresholds": {
@@ -835,111 +382,287 @@
               },
               {
                 "color": "orange",
-                "value": 50
+                "value": 10
               },
               {
                 "color": "red",
-                "value": 200
+                "value": 60
               }
             ]
-          }
+          },
+          "unit": "s"
         },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Last Render"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "ms"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Max Render"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "ms"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Changed Bytes"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "decbytes"
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "gridPos": {
-        "h": 11,
-        "w": 13,
-        "x": 0,
-        "y": 9
+        "h": 3,
+        "w": 3,
+        "x": 12,
+        "y": 1
       },
-      "id": 8,
+      "id": 6,
       "options": {
-        "legend": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
           "calcs": [
-            "lastNotNull",
-            "max"
+            "lastNotNull"
           ],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
+          "fields": "",
+          "values": false
         },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "multi",
-          "sort": "none"
-        }
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
       "pluginVersion": "11.5.2",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
           "editorMode": "code",
-          "expr": "candle_i2c_last_render_duration_milliseconds{job=\"candle-light\"}",
-          "legendFormat": "Last Render",
-          "range": true,
+          "expr": "candle_ntp_drift_seconds{job=\"$job\"}",
+          "legendFormat": "",
+          "range": false,
+          "instant": true,
           "refId": "A"
-        },
-        {
-          "editorMode": "code",
-          "expr": "candle_i2c_max_render_duration_milliseconds{job=\"candle-light\"}",
-          "legendFormat": "Max Render",
-          "range": true,
-          "refId": "B"
-        },
-        {
-          "editorMode": "code",
-          "expr": "candle_i2c_last_frame_changed_bytes{job=\"candle-light\"}",
-          "legendFormat": "Changed Bytes",
-          "range": true,
-          "refId": "C"
         }
       ],
-      "title": "I2C Render Activity",
+      "title": "NTP Drift",
       "transparent": true,
-      "type": "timeseries"
+      "type": "stat"
     },
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "efjej6af0v0g0e"
+        "uid": "$datasource"
       },
-      "description": "Traffic, writes and frame processing rates.",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": -80
+              },
+              {
+                "color": "green",
+                "value": -67
+              }
+            ]
+          },
+          "unit": "dBm"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 15,
+        "y": 1
+      },
+      "id": 7,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "candle_wifi_rssi_dbm{job=\"$job\"}",
+          "legendFormat": "",
+          "range": false,
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "RSSI",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 131072
+              },
+              {
+                "color": "green",
+                "value": 196608
+              }
+            ]
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 18,
+        "y": 1
+      },
+      "id": 8,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "candle_heap_free_bytes{job=\"$job\"}",
+          "legendFormat": "",
+          "range": false,
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Heap Free",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "dateTimeAsIso"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 21,
+        "y": 1
+      },
+      "id": 9,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "candle_current_unixtime{job=\"$job\"}",
+          "legendFormat": "",
+          "range": false,
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Unix Time",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -954,7 +677,7 @@
             "barAlignment": 0,
             "barWidthFactor": 0.6,
             "drawStyle": "line",
-            "fillOpacity": 0,
+            "fillOpacity": 10,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
@@ -987,71 +710,23 @@
                 "value": null
               }
             ]
-          }
+          },
+          "unit": "bytes"
         },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Bus B/s"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "Bps"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Changed B/s"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "Bps"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Rendered fps"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "ops"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Skipped fps"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "ops"
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "gridPos": {
-        "h": 11,
-        "w": 11,
-        "x": 13,
-        "y": 9
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 4
       },
-      "id": 14,
+      "id": 10,
       "options": {
         "legend": {
           "calcs": [
             "lastNotNull",
-            "mean",
+            "min",
             "max"
           ],
           "displayMode": "table",
@@ -1067,51 +742,511 @@
       "pluginVersion": "11.5.2",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
           "editorMode": "code",
-          "expr": "rate(candle_i2c_bus_bytes_written_total{job=\"candle-light\"}[$__rate_interval])",
-          "legendFormat": "Bus B/s",
+          "expr": "candle_heap_free_bytes{job=\"$job\"}",
+          "legendFormat": "free",
           "range": true,
+          "instant": false,
           "refId": "A"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
           "editorMode": "code",
-          "expr": "rate(candle_i2c_changed_bytes_total{job=\"candle-light\"}[$__rate_interval])",
-          "legendFormat": "Changed B/s",
+          "expr": "candle_heap_min_free_bytes{job=\"$job\"}",
+          "legendFormat": "min free",
           "range": true,
+          "instant": false,
           "refId": "B"
-        },
-        {
-          "editorMode": "code",
-          "expr": "rate(candle_i2c_frames_rendered_total{job=\"candle-light\"}[$__rate_interval])",
-          "legendFormat": "Rendered fps",
-          "range": true,
-          "refId": "C"
-        },
-        {
-          "editorMode": "code",
-          "expr": "rate(candle_i2c_frames_skipped_total{job=\"candle-light\"}[$__rate_interval])",
-          "legendFormat": "Skipped fps",
-          "range": true,
-          "refId": "D"
         }
       ],
-      "title": "I2C Throughput",
+      "title": "Heap",
       "transparent": true,
       "type": "timeseries"
     },
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "efjej6af0v0g0e"
+        "uid": "$datasource"
       },
-      "description": "Error counters and bus recovery rates over the current time range.",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "palette-classic"
           },
-          "decimals": 0,
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
           "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "dBm"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 4
+      },
+      "id": 11,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "min",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "candle_wifi_rssi_dbm{job=\"$job\"}",
+          "legendFormat": "RSSI",
+          "range": true,
+          "instant": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Wi-Fi RSSI",
+      "transparent": true,
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 11
+      },
+      "id": 12,
+      "panels": [],
+      "title": "Sun Control",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "Manual"
+                },
+                "1": {
+                  "text": "Sun"
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 0,
+        "y": 12
+      },
+      "id": 13,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "candle_sun_control_mode{job=\"$job\"}",
+          "legendFormat": "",
+          "range": false,
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Control Mode",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "unknown"
+                },
+                "1": {
+                  "text": "day"
+                },
+                "2": {
+                  "text": "civil"
+                },
+                "3": {
+                  "text": "nautical"
+                },
+                "4": {
+                  "text": "astronomical"
+                },
+                "5": {
+                  "text": "night"
+                },
+                "6": {
+                  "text": "disabled"
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 3,
+        "y": 12
+      },
+      "id": 14,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "candle_sun_current_mode{job=\"$job\"}",
+          "legendFormat": "",
+          "range": false,
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Sun Mode",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "Off"
+                },
+                "1": {
+                  "text": "On"
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 6,
+        "y": 12
+      },
+      "id": 15,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "candle_sun_candle_enabled{job=\"$job\"}",
+          "legendFormat": "",
+          "range": false,
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Candle Enabled",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "Off"
+                },
+                "1": {
+                  "text": "On"
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 9,
+        "y": 12
+      },
+      "id": 16,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "candle_sun_cache_loaded{job=\"$job\"}",
+          "legendFormat": "",
+          "range": false,
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Sun Cache",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "Off"
+                },
+                "1": {
+                  "text": "On"
+                }
+              }
+            }
+          ],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -1122,10 +1257,6 @@
               {
                 "color": "orange",
                 "value": 1
-              },
-              {
-                "color": "red",
-                "value": 10
               }
             ]
           }
@@ -1133,10 +1264,285 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 7,
-        "w": 13,
+        "h": 3,
+        "w": 3,
+        "x": 12,
+        "y": 12
+      },
+      "id": 17,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "candle_sun_fetch_in_progress{job=\"$job\"}",
+          "legendFormat": "",
+          "range": false,
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Sun Fetch",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 15,
+        "y": 12
+      },
+      "id": 18,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "candle_sun_attempts_today{job=\"$job\"}",
+          "legendFormat": "",
+          "range": false,
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Attempts Today",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "dateTimeAsIso"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 18,
+        "y": 12
+      },
+      "id": 19,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "candle_sun_last_update_unixtime{job=\"$job\"}",
+          "legendFormat": "",
+          "range": false,
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Last Sun Update",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 21,
+        "y": 12
+      },
+      "id": 20,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "increase(candle_sun_no_schedule_forced_off_total{job=\"$job\"}[$__range])",
+          "legendFormat": "",
+          "range": true,
+          "instant": false,
+          "refId": "A"
+        }
+      ],
+      "title": "No Schedule Off",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "min": 0,
+          "max": 255
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
         "x": 0,
-        "y": 20
+        "y": 15
       },
       "id": 21,
       "options": {
@@ -1166,135 +1572,45 @@
       "pluginVersion": "11.5.2",
       "targets": [
         {
-          "editorMode": "code",
-          "expr": "candle_sun_update_failures_by_reason_total",
-          "legendFormat": "{{reason}}",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Api Error Counters",
-      "transparent": true,
-      "type": "bargauge"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "efjej6af0v0g0e"
-      },
-      "description": "Error counters and bus recovery rates over the current time range.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
           },
-          "decimals": 0,
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "orange",
-                "value": 1
-              },
-              {
-                "color": "red",
-                "value": 10
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 11,
-        "x": 13,
-        "y": 20
-      },
-      "id": 12,
-      "options": {
-        "displayMode": "lcd",
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": false
-        },
-        "maxVizHeight": 300,
-        "minVizHeight": 10,
-        "minVizWidth": 0,
-        "namePlacement": "left",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showUnfilled": true,
-        "sizing": "auto",
-        "valueMode": "color"
-      },
-      "pluginVersion": "11.5.2",
-      "targets": [
-        {
           "editorMode": "code",
-          "expr": "increase(candle_i2c_errors_total{job=\"candle-light\"}[$__range])",
-          "legendFormat": "I2C Errors",
+          "expr": "candle_i2c_brightness{job=\"$job\"}",
+          "legendFormat": "matrix PWM",
           "range": true,
+          "instant": false,
           "refId": "A"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
           "editorMode": "code",
-          "expr": "increase(candle_i2c_recoveries_total{job=\"candle-light\"}[$__range])",
-          "legendFormat": "Recoveries",
+          "expr": "candle_sun_target_brightness{job=\"$job\"}",
+          "legendFormat": "sun target %",
           "range": true,
+          "instant": false,
           "refId": "B"
-        },
-        {
-          "editorMode": "code",
-          "expr": "increase(candle_i2c_recovery_failures_total{job=\"candle-light\"}[$__range])",
-          "legendFormat": "Recovery Failures",
-          "range": true,
-          "refId": "C"
-        },
-        {
-          "editorMode": "code",
-          "expr": "increase(candle_i2c_clock_fallbacks_total{job=\"candle-light\"}[$__range])",
-          "legendFormat": "Clock Fallbacks",
-          "range": true,
-          "refId": "D"
-        },
-        {
-          "editorMode": "code",
-          "expr": "increase(candle_i2c_clock_restores_total{job=\"candle-light\"}[$__range])",
-          "legendFormat": "Clock Restores",
-          "range": true,
-          "refId": "E"
         }
       ],
-      "title": "I2C Error Counters",
+      "title": "Brightness",
       "transparent": true,
       "type": "bargauge"
     },
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "efjej6af0v0g0e"
+        "uid": "$datasource"
       },
-      "description": "Operational counters for Wi-Fi, HTTP and sun refresh logic.",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "palette-classic"
           },
-          "decimals": 0,
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -1304,405 +1620,20 @@
                 "value": null
               }
             ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 13,
-        "x": 0,
-        "y": 27
-      },
-      "id": 16,
-      "options": {
-        "displayMode": "lcd",
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": false
-        },
-        "maxVizHeight": 300,
-        "minVizHeight": 10,
-        "minVizWidth": 0,
-        "namePlacement": "left",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showUnfilled": true,
-        "sizing": "auto",
-        "valueMode": "color"
-      },
-      "pluginVersion": "11.5.2",
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "increase(candle_wifi_connect_attempts_total{job=\"candle-light\"}[$__range])",
-          "legendFormat": "Wi-Fi Connect Attempts",
-          "range": true,
-          "refId": "A"
-        },
-        {
-          "editorMode": "code",
-          "expr": "increase(candle_wifi_connect_success_total{job=\"candle-light\"}[$__range])",
-          "legendFormat": "Wi-Fi Connect Success",
-          "range": true,
-          "refId": "B"
-        },
-        {
-          "editorMode": "code",
-          "expr": "increase(candle_wifi_disconnects_total{job=\"candle-light\"}[$__range])",
-          "legendFormat": "Wi-Fi Disconnects",
-          "range": true,
-          "refId": "C"
-        },
-        {
-          "editorMode": "code",
-          "expr": "increase(candle_http_requests_total{job=\"candle-light\"}[$__range])",
-          "legendFormat": "HTTP Requests",
-          "range": true,
-          "refId": "D"
-        },
-        {
-          "editorMode": "code",
-          "expr": "increase(candle_prometheus_scrapes_total{job=\"candle-light\"}[$__range])",
-          "legendFormat": "Prometheus Scrapes",
-          "range": true,
-          "refId": "E"
-        },
-        {
-          "editorMode": "code",
-          "expr": "increase(candle_ntp_sync_failures_total{job=\"candle-light\"}[$__range])",
-          "legendFormat": "NTP Failures",
-          "range": true,
-          "refId": "F"
-        },
-        {
-          "editorMode": "code",
-          "expr": "increase(candle_sun_refresh_requests_total{job=\"candle-light\"}[$__range])",
-          "legendFormat": "Sun Refresh Requests",
-          "range": true,
-          "refId": "G"
-        },
-        {
-          "editorMode": "code",
-          "expr": "increase(candle_sun_update_success_total{job=\"candle-light\"}[$__range])",
-          "legendFormat": "Sun Update Success",
-          "range": true,
-          "refId": "H"
-        },
-        {
-          "editorMode": "code",
-          "expr": "increase(candle_sun_update_failures_total{job=\"candle-light\"}[$__range])",
-          "legendFormat": "Sun Update Failures",
-          "range": true,
-          "refId": "I"
-        }
-      ],
-      "title": "Service Counters",
-      "type": "bargauge"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "efjej6af0v0g0e"
-      },
-      "description": "Current low-level I2C health indicators.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
           },
-          "decimals": 0,
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "orange",
-                "value": 1
-              },
-              {
-                "color": "red",
-                "value": 2
-              }
-            ]
-          }
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Clock Hz"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "hertz"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Fallback"
-            },
-            "properties": [
-              {
-                "id": "mappings",
-                "value": [
-                  {
-                    "options": {
-                      "0": {
-                        "text": "off"
-                      },
-                      "1": {
-                        "text": "active"
-                      }
-                    },
-                    "type": "value"
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 11,
-        "x": 13,
-        "y": 27
-      },
-      "id": 13,
-      "options": {
-        "displayMode": "lcd",
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": false
-        },
-        "maxVizHeight": 300,
-        "minVizHeight": 10,
-        "minVizWidth": 0,
-        "namePlacement": "left",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showUnfilled": true,
-        "sizing": "auto",
-        "valueMode": "color"
-      },
-      "pluginVersion": "11.5.2",
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "candle_i2c_clock_hz{job=\"candle-light\"}",
-          "legendFormat": "Clock Hz",
-          "range": true,
-          "refId": "A"
-        },
-        {
-          "editorMode": "code",
-          "expr": "candle_i2c_clock_fallback_active{job=\"candle-light\"}",
-          "legendFormat": "Fallback",
-          "range": true,
-          "refId": "B"
-        },
-        {
-          "editorMode": "code",
-          "expr": "candle_i2c_consecutive_errors{job=\"candle-light\"}",
-          "legendFormat": "Consecutive Errors",
-          "range": true,
-          "refId": "C"
-        },
-        {
-          "editorMode": "code",
-          "expr": "candle_i2c_last_error_code{job=\"candle-light\"}",
-          "legendFormat": "Last Error Code",
-          "range": true,
-          "refId": "D"
-        },
-        {
-          "editorMode": "code",
-          "expr": "candle_i2c_last_recovery_duration_milliseconds{job=\"candle-light\"}",
-          "legendFormat": "Recovery ms",
-          "range": true,
-          "refId": "E"
-        }
-      ],
-      "title": "I2C Health",
-      "transparent": true,
-      "type": "bargauge"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "efjej6af0v0g0e"
-      },
-      "description": "Success and failure rates by I2C stage.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "decimals": 2,
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "orange",
-                "value": 0.1
-              },
-              {
-                "color": "red",
-                "value": 1
-              }
-            ]
-          },
-          "unit": "ops"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 19,
-        "w": 13,
-        "x": 0,
-        "y": 35
-      },
-      "id": 15,
-      "options": {
-        "legend": {
-          "calcs": [
-            "lastNotNull",
-            "max"
-          ],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "multi",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "11.5.2",
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "rate(candle_i2c_stage_failures_total{job=\"candle-light\"}[$__rate_interval])",
-          "legendFormat": "{{stage}} failures/s",
-          "range": true,
-          "refId": "A"
-        },
-        {
-          "editorMode": "code",
-          "expr": "rate(candle_i2c_stage_retries_total{job=\"candle-light\"}[$__rate_interval])",
-          "legendFormat": "{{stage}} retries/s",
-          "range": true,
-          "refId": "B"
-        },
-        {
-          "editorMode": "code",
-          "expr": "rate(candle_i2c_stage_success_total{job=\"candle-light\"}[$__rate_interval])",
-          "legendFormat": "{{stage}} success/s",
-          "range": true,
-          "refId": "C"
-        }
-      ],
-      "title": "I2C Stage Rates",
-      "transparent": true,
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "efjej6af0v0g0e"
-      },
-      "description": "Sun schedule loaded from /sun_position.json in minutes from midnight.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "mappings": [],
-          "max": 1440,
+          "unit": "m",
           "min": 0,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          },
-          "unit": "m"
+          "max": 1440
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 9,
-        "w": 11,
-        "x": 13,
-        "y": 35
+        "h": 6,
+        "w": 16,
+        "x": 8,
+        "y": 15
       },
-      "id": 10,
+      "id": 22,
       "options": {
         "displayMode": "lcd",
         "legend": {
@@ -1730,72 +1661,112 @@
       "pluginVersion": "11.5.2",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
           "editorMode": "code",
-          "expr": "candle_sun_sunrise_minutes{job=\"candle-light\"}",
-          "legendFormat": "Sunrise",
+          "expr": "candle_sun_sunrise_minutes{job=\"$job\"}",
+          "legendFormat": "sunrise",
           "range": true,
+          "instant": false,
           "refId": "A"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
           "editorMode": "code",
-          "expr": "candle_sun_sunset_minutes{job=\"candle-light\"}",
-          "legendFormat": "Sunset",
+          "expr": "candle_sun_sunset_minutes{job=\"$job\"}",
+          "legendFormat": "sunset",
           "range": true,
+          "instant": false,
           "refId": "B"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
           "editorMode": "code",
-          "expr": "candle_sun_civil_twilight_begin_minutes{job=\"candle-light\"}",
-          "legendFormat": "Civil Begin",
+          "expr": "candle_sun_civil_twilight_begin_minutes{job=\"$job\"}",
+          "legendFormat": "civil begin",
           "range": true,
+          "instant": false,
           "refId": "C"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
           "editorMode": "code",
-          "expr": "candle_sun_civil_twilight_end_minutes{job=\"candle-light\"}",
-          "legendFormat": "Civil End",
+          "expr": "candle_sun_civil_twilight_end_minutes{job=\"$job\"}",
+          "legendFormat": "civil end",
           "range": true,
+          "instant": false,
           "refId": "D"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
           "editorMode": "code",
-          "expr": "candle_sun_nautical_twilight_begin_minutes{job=\"candle-light\"}",
-          "legendFormat": "Nautical Begin",
+          "expr": "candle_sun_nautical_twilight_begin_minutes{job=\"$job\"}",
+          "legendFormat": "nautical begin",
           "range": true,
+          "instant": false,
           "refId": "E"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
           "editorMode": "code",
-          "expr": "candle_sun_nautical_twilight_end_minutes{job=\"candle-light\"}",
-          "legendFormat": "Nautical End",
+          "expr": "candle_sun_nautical_twilight_end_minutes{job=\"$job\"}",
+          "legendFormat": "nautical end",
           "range": true,
+          "instant": false,
           "refId": "F"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
           "editorMode": "code",
-          "expr": "candle_sun_astronomical_twilight_begin_minutes{job=\"candle-light\"}",
-          "legendFormat": "Astronomical Begin",
+          "expr": "candle_sun_astronomical_twilight_begin_minutes{job=\"$job\"}",
+          "legendFormat": "astronomical begin",
           "range": true,
+          "instant": false,
           "refId": "G"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
           "editorMode": "code",
-          "expr": "candle_sun_astronomical_twilight_end_minutes{job=\"candle-light\"}",
-          "legendFormat": "Astronomical End",
+          "expr": "candle_sun_astronomical_twilight_end_minutes{job=\"$job\"}",
+          "legendFormat": "astronomical end",
           "range": true,
+          "instant": false,
           "refId": "H"
         }
       ],
-      "title": "Sun Schedule",
+      "title": "Sun Schedule Minutes",
       "transparent": true,
       "type": "bargauge"
     },
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "efjej6af0v0g0e"
+        "uid": "$datasource"
       },
-      "description": "Wi-Fi signal trend.",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1810,7 +1781,7 @@
             "barAlignment": 0,
             "barWidthFactor": 0.6,
             "drawStyle": "line",
-            "fillOpacity": 0,
+            "fillOpacity": 10,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
@@ -1835,36 +1806,25 @@
             }
           },
           "mappings": [],
-          "max": -30,
-          "min": -100,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "orange",
-                "value": -80
-              },
-              {
                 "color": "green",
-                "value": -67
+                "value": null
               }
             ]
-          },
-          "unit": "dBm"
+          }
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 10,
-        "w": 11,
-        "x": 13,
-        "y": 44
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 21
       },
-      "id": 7,
+      "id": 23,
       "options": {
         "legend": {
           "calcs": [
@@ -1878,30 +1838,644 @@
         },
         "tooltip": {
           "hideZeros": false,
-          "mode": "single",
+          "mode": "multi",
           "sort": "none"
         }
       },
       "pluginVersion": "11.5.2",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
           "editorMode": "code",
-          "expr": "candle_wifi_rssi_dbm{job=\"candle-light\"}",
-          "legendFormat": "RSSI",
+          "expr": "candle_sun_current_mode{job=\"$job\"}",
+          "legendFormat": "mode",
           "range": true,
+          "instant": false,
           "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "candle_sun_candle_enabled{job=\"$job\"}",
+          "legendFormat": "enabled",
+          "range": true,
+          "instant": false,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "candle_sun_target_brightness{job=\"$job\"}",
+          "legendFormat": "target",
+          "range": true,
+          "instant": false,
+          "refId": "C"
         }
       ],
-      "title": "Wi-Fi RSSI",
+      "title": "Sun State History",
       "transparent": true,
       "type": "timeseries"
     },
     {
+      "collapsed": false,
       "datasource": {
         "type": "prometheus",
-        "uid": "efjej6af0v0g0e"
+        "uid": "$datasource"
       },
-      "description": "Current sun mode code and candle enable state.",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 29
+      },
+      "id": 24,
+      "panels": [],
+      "title": "I2C Matrix",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "hertz"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 0,
+        "y": 30
+      },
+      "id": 25,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "candle_i2c_clock_hz{job=\"$job\"}",
+          "legendFormat": "",
+          "range": false,
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "I2C Clock",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "Off"
+                },
+                "1": {
+                  "text": "On"
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 3,
+        "y": 30
+      },
+      "id": 26,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "candle_i2c_clock_fallback_active{job=\"$job\"}",
+          "legendFormat": "",
+          "range": false,
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Clock Fallback",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 6,
+        "y": 30
+      },
+      "id": 27,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "candle_i2c_current_page{job=\"$job\"}",
+          "legendFormat": "",
+          "range": false,
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Current Page",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 3
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 9,
+        "y": 30
+      },
+      "id": 28,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "candle_i2c_consecutive_errors{job=\"$job\"}",
+          "legendFormat": "",
+          "range": false,
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Consecutive Errors",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 12,
+        "y": 30
+      },
+      "id": 29,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "candle_i2c_last_error_code{job=\"$job\"}",
+          "legendFormat": "",
+          "range": false,
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Last Error",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 15,
+        "y": 30
+      },
+      "id": 30,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "candle_i2c_last_recovery_duration_milliseconds{job=\"$job\"}",
+          "legendFormat": "",
+          "range": false,
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Last Recovery",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 18,
+        "y": 30
+      },
+      "id": 31,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "candle_i2c_last_render_duration_milliseconds{job=\"$job\"}",
+          "legendFormat": "",
+          "range": false,
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Last Render",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 21,
+        "y": 30
+      },
+      "id": 32,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "candle_i2c_last_frame_changed_bytes{job=\"$job\"}",
+          "legendFormat": "",
+          "range": false,
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Changed Bytes",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1916,7 +2490,7 @@
             "barAlignment": 0,
             "barWidthFactor": 0.6,
             "drawStyle": "line",
-            "fillOpacity": 0,
+            "fillOpacity": 10,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
@@ -1945,89 +2519,28 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "blue",
+                "color": "green",
                 "value": null
               }
             ]
-          }
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Sun Mode"
-            },
-            "properties": [
-              {
-                "id": "mappings",
-                "value": [
-                  {
-                    "options": {
-                      "0": {
-                        "text": "unknown"
-                      },
-                      "1": {
-                        "text": "day"
-                      },
-                      "2": {
-                        "text": "civil"
-                      },
-                      "3": {
-                        "text": "nautical"
-                      },
-                      "4": {
-                        "text": "astronomical"
-                      },
-                      "5": {
-                        "text": "night"
-                      },
-                      "6": {
-                        "text": "disabled"
-                      }
-                    },
-                    "type": "value"
-                  }
-                ]
-              }
-            ]
           },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Candle Enabled"
-            },
-            "properties": [
-              {
-                "id": "mappings",
-                "value": [
-                  {
-                    "options": {
-                      "0": {
-                        "text": "off"
-                      },
-                      "1": {
-                        "text": "on"
-                      }
-                    },
-                    "type": "value"
-                  }
-                ]
-              }
-            ]
-          }
-        ]
+          "unit": "ops"
+        },
+        "overrides": []
       },
       "gridPos": {
-        "h": 11,
-        "w": 24,
+        "h": 8,
+        "w": 12,
         "x": 0,
-        "y": 54
+        "y": 33
       },
-      "id": 9,
+      "id": 33,
       "options": {
         "legend": {
           "calcs": [
-            "lastNotNull"
+            "lastNotNull",
+            "min",
+            "max"
           ],
           "displayMode": "table",
           "placement": "bottom",
@@ -2042,23 +2555,1373 @@
       "pluginVersion": "11.5.2",
       "targets": [
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
           "editorMode": "code",
-          "expr": "candle_sun_current_mode{job=\"candle-light\"}",
-          "legendFormat": "Sun Mode",
+          "expr": "rate(candle_i2c_frames_rendered_total{job=\"$job\"}[$__rate_interval])",
+          "legendFormat": "rendered/s",
           "range": true,
+          "instant": false,
           "refId": "A"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
           "editorMode": "code",
-          "expr": "candle_sun_candle_enabled{job=\"candle-light\"}",
-          "legendFormat": "Candle Enabled",
+          "expr": "rate(candle_i2c_frames_skipped_total{job=\"$job\"}[$__rate_interval])",
+          "legendFormat": "skipped/s",
           "range": true,
+          "instant": false,
           "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "rate(candle_i2c_errors_total{job=\"$job\"}[$__rate_interval])",
+          "legendFormat": "errors/s",
+          "range": true,
+          "instant": false,
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "rate(candle_i2c_recoveries_total{job=\"$job\"}[$__rate_interval])",
+          "legendFormat": "recoveries/s",
+          "range": true,
+          "instant": false,
+          "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "rate(candle_i2c_recovery_failures_total{job=\"$job\"}[$__rate_interval])",
+          "legendFormat": "recovery failures/s",
+          "range": true,
+          "instant": false,
+          "refId": "E"
         }
       ],
-      "title": "Sun State",
+      "title": "I2C Render Activity",
       "transparent": true,
       "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 33
+      },
+      "id": 34,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "min",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "rate(candle_i2c_stage_attempts_total{job=\"$job\"}[$__rate_interval])",
+          "legendFormat": "{{stage}} attempts/s",
+          "range": true,
+          "instant": false,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "rate(candle_i2c_stage_success_total{job=\"$job\"}[$__rate_interval])",
+          "legendFormat": "{{stage}} success/s",
+          "range": true,
+          "instant": false,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "rate(candle_i2c_stage_failures_total{job=\"$job\"}[$__rate_interval])",
+          "legendFormat": "{{stage}} failures/s",
+          "range": true,
+          "instant": false,
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "rate(candle_i2c_stage_retries_total{job=\"$job\"}[$__rate_interval])",
+          "legendFormat": "{{stage}} retries/s",
+          "range": true,
+          "instant": false,
+          "refId": "D"
+        }
+      ],
+      "title": "I2C Stage Rates",
+      "transparent": true,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "Bps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 41
+      },
+      "id": 35,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "min",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "rate(candle_i2c_bus_bytes_written_total{job=\"$job\"}[$__rate_interval])",
+          "legendFormat": "bus bytes/s",
+          "range": true,
+          "instant": false,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "rate(candle_i2c_changed_bytes_total{job=\"$job\"}[$__rate_interval])",
+          "legendFormat": "changed bytes/s",
+          "range": true,
+          "instant": false,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "rate(candle_i2c_stage_bytes_written_total{job=\"$job\"}[$__rate_interval])",
+          "legendFormat": "{{stage}} bytes/s",
+          "range": true,
+          "instant": false,
+          "refId": "C"
+        }
+      ],
+      "title": "I2C Payload",
+      "transparent": true,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 41
+      },
+      "id": 36,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "min",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "rate(candle_i2c_end_transmission_errors_total{job=\"$job\"}[$__rate_interval])",
+          "legendFormat": "{{name}}/s",
+          "range": true,
+          "instant": false,
+          "refId": "A"
+        }
+      ],
+      "title": "I2C Error Codes",
+      "transparent": true,
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 49
+      },
+      "id": 37,
+      "panels": [],
+      "title": "Service Counters",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 50
+      },
+      "id": 38,
+      "options": {
+        "displayMode": "lcd",
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "maxVizHeight": 300,
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "namePlacement": "left",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "sizing": "auto",
+        "valueMode": "color"
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "increase(candle_wifi_connect_attempts_total{job=\"$job\"}[$__range])",
+          "legendFormat": "Wi-Fi attempts",
+          "range": true,
+          "instant": false,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "increase(candle_wifi_connect_success_total{job=\"$job\"}[$__range])",
+          "legendFormat": "Wi-Fi success",
+          "range": true,
+          "instant": false,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "increase(candle_wifi_disconnects_total{job=\"$job\"}[$__range])",
+          "legendFormat": "Wi-Fi disconnects",
+          "range": true,
+          "instant": false,
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "increase(candle_http_requests_total{job=\"$job\"}[$__range])",
+          "legendFormat": "HTTP requests",
+          "range": true,
+          "instant": false,
+          "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "increase(candle_prometheus_scrapes_total{job=\"$job\"}[$__range])",
+          "legendFormat": "Prometheus scrapes",
+          "range": true,
+          "instant": false,
+          "refId": "E"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "increase(candle_ntp_sync_failures_total{job=\"$job\"}[$__range])",
+          "legendFormat": "NTP failures",
+          "range": true,
+          "instant": false,
+          "refId": "F"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "increase(candle_ota_success_total{job=\"$job\"}[$__range])",
+          "legendFormat": "OTA success",
+          "range": true,
+          "instant": false,
+          "refId": "G"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "increase(candle_ota_failures_total{job=\"$job\"}[$__range])",
+          "legendFormat": "OTA failures",
+          "range": true,
+          "instant": false,
+          "refId": "H"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "increase(candle_sun_refresh_requests_total{job=\"$job\"}[$__range])",
+          "legendFormat": "Sun refresh requests",
+          "range": true,
+          "instant": false,
+          "refId": "I"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "increase(candle_sun_update_success_total{job=\"$job\"}[$__range])",
+          "legendFormat": "Sun update success",
+          "range": true,
+          "instant": false,
+          "refId": "J"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "increase(candle_sun_update_failures_total{job=\"$job\"}[$__range])",
+          "legendFormat": "Sun update failures",
+          "range": true,
+          "instant": false,
+          "refId": "K"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "increase(candle_sun_no_schedule_forced_off_total{job=\"$job\"}[$__range])",
+          "legendFormat": "No schedule forced off",
+          "range": true,
+          "instant": false,
+          "refId": "L"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "increase(candle_i2c_clock_fallbacks_total{job=\"$job\"}[$__range])",
+          "legendFormat": "I2C clock fallbacks",
+          "range": true,
+          "instant": false,
+          "refId": "M"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "increase(candle_i2c_clock_restores_total{job=\"$job\"}[$__range])",
+          "legendFormat": "I2C clock restores",
+          "range": true,
+          "instant": false,
+          "refId": "N"
+        }
+      ],
+      "title": "Range Counters",
+      "transparent": true,
+      "type": "bargauge"
+    },
+    {
+      "collapsed": false,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 58
+      },
+      "id": 39,
+      "panels": [],
+      "title": "Diagnostics",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "dateTimeAsIso"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 0,
+        "y": 59
+      },
+      "id": 40,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "candle_ntp_last_success_unixtime{job=\"$job\"}",
+          "legendFormat": "",
+          "range": false,
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "NTP Last Sync",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "dateTimeAsIso"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 3,
+        "y": 59
+      },
+      "id": 41,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "candle_i2c_last_success_unixtime{job=\"$job\"}",
+          "legendFormat": "",
+          "range": false,
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "I2C Last Success",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "dateTimeAsIso"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 6,
+        "y": 59
+      },
+      "id": 42,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "candle_i2c_last_error_unixtime{job=\"$job\"}",
+          "legendFormat": "",
+          "range": false,
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "I2C Last Error",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "dateTimeAsIso"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 9,
+        "y": 59
+      },
+      "id": 43,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "candle_i2c_last_recovery_unixtime{job=\"$job\"}",
+          "legendFormat": "",
+          "range": false,
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "I2C Last Recovery",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 12,
+        "y": 59
+      },
+      "id": 44,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "candle_i2c_max_consecutive_errors{job=\"$job\"}",
+          "legendFormat": "",
+          "range": false,
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Max Errors",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 15,
+        "y": 59
+      },
+      "id": 45,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "candle_i2c_max_consecutive_success{job=\"$job\"}",
+          "legendFormat": "",
+          "range": false,
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Max Success",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 18,
+        "y": 59
+      },
+      "id": 46,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "candle_i2c_max_frame_changed_bytes{job=\"$job\"}",
+          "legendFormat": "",
+          "range": false,
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Max Changed Bytes",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 21,
+        "y": 59
+      },
+      "id": 47,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "candle_i2c_max_recovery_duration_milliseconds{job=\"$job\"}",
+          "legendFormat": "",
+          "range": false,
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Max Recovery",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 0,
+        "y": 62
+      },
+      "id": 48,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "candle_i2c_max_render_duration_milliseconds{job=\"$job\"}",
+          "legendFormat": "",
+          "range": false,
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Max Render",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 3,
+        "y": 62
+      },
+      "id": 49,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "candle_i2c_consecutive_success{job=\"$job\"}",
+          "legendFormat": "",
+          "range": false,
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Consecutive Success",
+      "transparent": true,
+      "type": "stat"
     }
   ],
   "preload": false,
@@ -2067,11 +3930,56 @@
   "tags": [
     "candle",
     "esp32",
+    "prometheus",
     "i2c",
     "sun"
   ],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "efjej6af0v0g0e",
+          "value": "efjej6af0v0g0e"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Datasource",
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "",
+        "type": "datasource"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "candle-light",
+          "value": "candle-light"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "$datasource"
+        },
+        "definition": "label_values(candle_up, job)",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Job",
+        "multi": false,
+        "name": "job",
+        "options": [],
+        "query": {
+          "query": "label_values(candle_up, job)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "sort": 1,
+        "type": "query"
+      }
+    ]
   },
   "time": {
     "from": "now-7d",
@@ -2081,6 +3989,6 @@
   "timezone": "browser",
   "title": "Candle Light",
   "uid": "candle-light",
-  "version": 29,
+  "version": 31,
   "weekStart": ""
 }

@@ -1,0 +1,222 @@
+/* ─── Moon page ──────────────────────────────────────────────────────────── */
+
+body.moon-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background:
+    radial-gradient(circle at top, rgba(60, 80, 140, 0.14), transparent 42%),
+    linear-gradient(180deg, #0e1018 0%, #090a0d 100%);
+  color: var(--color-text);
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.moon-page h1 {
+  margin: 0;
+  font-size: clamp(1.9rem, 3vw, 2.4rem);
+  letter-spacing: 0.02em;
+  color: var(--color-accent-light);
+}
+
+/* Panel: canvas + info side-by-side on wide screens */
+.moon-panel {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: center;
+  padding: 20px;
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+  background: var(--color-card);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.moon-canvas-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.moon-canvas-wrap canvas {
+  width: 100%;
+  max-width: 360px;
+  height: auto;
+  display: block;
+  border-radius: 12px;
+}
+
+/* Info cards */
+.moon-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-content: start;
+}
+
+.moon-spinner {
+  color: var(--color-text-soft);
+  grid-column: 1 / -1;
+}
+
+.moon-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.moon-stat-k {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-soft);
+}
+
+.moon-stat-v {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+/* Cycle section */
+.moon-cycle-section {
+  margin-top: 20px;
+  padding: 18px 20px;
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+  background: var(--color-card);
+}
+
+.moon-led-section {
+  margin-top: 14px;
+}
+
+.moon-led-controls {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.95fr) minmax(280px, 1fr);
+  gap: 16px;
+  align-items: center;
+}
+
+.moon-led-controls .brightness-control {
+  margin: 0;
+}
+
+.moon-led-color-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  color: var(--color-text-soft);
+  font-size: 0.88rem;
+}
+
+.moon-led-swatch {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 50%;
+  box-shadow: 0 0 14px currentColor;
+}
+
+.moon-led-details {
+  display: block;
+  margin-top: 8px;
+  color: var(--color-text-soft);
+  font-size: 0.88rem;
+  line-height: 1.35;
+}
+
+.moon-cycle-title {
+  margin: 0 0 16px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-accent-light);
+}
+
+.moon-cycle {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 8px;
+}
+
+.cycle-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 4px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+}
+
+.cycle-item.active {
+  border-color: var(--color-accent-light);
+  background: rgba(255, 183, 102, 0.1);
+}
+
+.cycle-canvas {
+  display: block;
+  border-radius: 50%;
+}
+
+.cycle-label {
+  font-size: 10px;
+  text-align: center;
+  color: var(--color-text-soft);
+  line-height: 1.3;
+}
+
+.cycle-item.active .cycle-label {
+  color: var(--color-accent-light);
+  font-weight: 600;
+}
+
+@media (max-width: 740px) {
+  .moon-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .moon-led-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .moon-page h1 {
+    text-align: center;
+  }
+
+  .moon-canvas-wrap canvas {
+    max-width: 280px;
+  }
+
+  .moon-cycle {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .moon-info {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .moon-stat-v {
+    font-size: 16px;
+  }
+
+  .moon-cycle {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+  }
+
+  .cycle-item {
+    padding: 6px 2px;
+  }
+}

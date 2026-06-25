@@ -1,99 +1,102 @@
-# Настройки устройства
+# Settings
 
-Настройки хранятся в файле `/settings.json` на LittleFS.
-Загружаются при старте, сохраняются через `/api/save` или `/api/brightness`.
+The device stores application settings as `/settings.json` on LittleFS. Wi-Fi credentials are stored separately in NVS using the `wifi` Preferences namespace and are not written back into `settings.json`.
 
----
+The firmware loads defaults when the file is missing, empty, or cannot be parsed. Saves are written through `/settings.tmp`, verified, then promoted to `/settings.json`; the previous file is temporarily moved to `/settings.bak`.
 
-## Структура файла `settings.json`
+## File Structure
+
+Current bundled example:
 
 ```json
 {
-  "wifi": {
-    "devname": "candle",
-    "name": "Candle light",
-    "ssid": "MyNetwork",
-    "password": "secret",
-    "power": 0,
-    "phy_mode": "11n"
-  },
+  "devname": "candle-light1",
+  "name": "Candle",
   "ntp": {
     "ntp_server": "pool.ntp.org",
+    "ntp_server2": "",
     "ntp_timezone": "Europe/Moscow"
   },
   "location": {
     "enabled": true,
-    "lat": 55.29592,
-    "lon": 35.58514,
+    "lat": 55.4997807,
+    "lng": 35.9809486
+  },
+  "moonLed": {
+    "enabled": false,
+    "maxBrightness": 25,
+    "hue": 42
+  },
+  "timeSchedule": {
+    "enabled": false,
+    "onMinute": 1080,
+    "offMinute": 1380
   },
   "brightness": 16,
   "candleOn": true
 }
 ```
 
----
+## Fields
 
-## Параметры
+| Field                    | Type                 | Description                                                                                                  |
+| ------------------------ | -------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `devname`                | string, max 31 chars | Network hostname shown by the device.                                                                        |
+| `name`                   | string, max 63 chars | Display name used by the web UI and metrics labels.                                                          |
+| `ntp.ntp_server`         | string, max 63 chars | Primary NTP server.                                                                                          |
+| `ntp.ntp_server2`        | string, max 63 chars | Optional secondary NTP server. Empty means primary only.                                                     |
+| `ntp.ntp_timezone`       | string, max 31 chars | Supported timezone name or POSIX timezone string. Examples: `Europe/Moscow`, `UTC`, `MSK-3`.                 |
+| `location.enabled`       | bool                 | Enables automatic sun-based candle control.                                                                  |
+| `location.lat`           | number               | Latitude in degrees, `-90..90`.                                                                              |
+| `location.lng`           | number               | Longitude in degrees, `-180..180`.                                                                           |
+| `moonLed.enabled`        | bool                 | Enables optional moon WS2812 LED control.                                                                    |
+| `moonLed.maxBrightness`  | integer              | Upper brightness limit for the moon LED, `0..100`. Values `101..255` are converted to percent by API writes. |
+| `moonLed.hue`            | integer              | Moon LED hue in degrees, `0..360`.                                                                           |
+| `timeSchedule.enabled`   | bool                 | Enables fixed daily time schedule mode.                                                                      |
+| `timeSchedule.onMinute`  | integer              | Candle-on minute from local midnight, `0..1439`. Default `1080` is 18:00.                                    |
+| `timeSchedule.offMinute` | integer              | Candle-off minute from local midnight, `0..1439`. Default `1380` is 23:00.                                   |
+| `brightness`             | integer              | Brightness in percent, `0..100`. Values `101..255` in stored or API payloads are converted to percent.       |
+| `candleOn`               | bool                 | Manual candle state when neither sun mode nor time schedule is active, or while valid time is unavailable.   |
 
-### Раздел `wifi`
+## Defaults
 
-| Поле       | Тип          | Описание                                                                                       |
-| ---------- | ------------ | ---------------------------------------------------------------------------------------------- |
-| `devname`  | string (≤31) | Сетевое имя устройства (mDNS hostname). Используется как имя точки доступа при captive-portal. |
-| `name`     | string (≤63) | Отображаемое имя устройства (для UI).                                                          |
-| `ssid`     | string (≤63) | SSID Wi-Fi сети.                                                                               |
-| `password` | string (≤63) | Пароль Wi-Fi сети.                                                                             |
-| `power`    | int          | Мощность передатчика Wi-Fi (0 = максимум по умолчанию платформы).                              |
-| `phy_mode` | string (≤7)  | Режим PHY: `"11b"`, `"11g"`, `"11n"`.                                                          |
+If `/settings.json` is regenerated by firmware defaults, the built-in values are:
 
-### Раздел `ntp`
+| Field                                              | Default                     |
+| -------------------------------------------------- | --------------------------- |
+| `devname`                                          | `candle-light`              |
+| `name`                                             | `Candle Light`              |
+| `ntp.ntp_server`                                   | `pool.ntp.org`              |
+| `ntp.ntp_server2`                                  | empty                       |
+| `ntp.ntp_timezone`                                 | `Europe/London`             |
+| `location.enabled`                                 | `true`                      |
+| `location.lat` / `location.lng`                    | `51.5287398` / `-0.2664056` |
+| `moonLed.enabled`                                  | `false`                     |
+| `moonLed.maxBrightness`                            | `25`                        |
+| `moonLed.hue`                                      | `42`                        |
+| `timeSchedule.enabled`                             | `false`                     |
+| `timeSchedule.onMinute` / `timeSchedule.offMinute` | `1080` / `1380`             |
+| `brightness`                                       | `16`                        |
+| `candleOn`                                         | `true`                      |
 
-| Поле           | Тип          | Описание                                                                                                                                       |
-| -------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ntp_server`   | string (≤63) | Адрес NTP-сервера. По умолчанию `pool.ntp.org`.                                                                                                |
-| `ntp_timezone` | string (≤31) | Часовой пояс в формате POSIX TZ или имя зоны (например `Europe/Moscow`). Используется для вычисления местного времени и солнечного расписания. |
+## Runtime Behavior
 
-### Раздел `location`
+- `brightness = 0` forces `candleOn = false`.
+- Sun mode and time schedule mode are mutually exclusive. When `timeSchedule.enabled` is set, `location.enabled` is cleared by runtime normalization.
+- Time schedule mode needs valid local time. If `onMinute == offMinute`, the schedule is treated as always on. If `onMinute > offMinute`, the active interval crosses midnight.
+- When automatic sun mode is enabled, output state is determined by local solar mode and schedule validity.
+- Before valid NTP or manual time is available, automatic modes report `waiting_time` and keep the manual output state.
+- Manual time can be set through `/api/time` only before NTP has synchronized.
+- Changes saved through `/api/save` are persisted to LittleFS and then the device restarts.
+- Brightness and mode changes through `/api/brightness` are persisted and applied without restart.
+- Moon LED changes through `/api/moon-led` are persisted to LittleFS and applied without restart.
+- The moon LED can light only while the main candle output is active.
+- Moon LED output brightness is calculated from lunar disc illumination and `moonLed.maxBrightness`.
 
-| Поле      | Тип   | Диапазон  | Описание                                                                                                         |
-| --------- | ----- | --------- | ---------------------------------------------------------------------------------------------------------------- |
-| `enabled` | bool  | —         | Включить автоматический режим по солнцу. Если `true`, свеча включается/выключается по расписанию восхода/заката. |
-| `lat`     | float | −90..90   | Широта местоположения в градусах.                                                                                |
-| `lng`     | float | −180..180 | Долгота местоположения в градусах.                                                                               |
+## Legacy Migration
 
-### Корневые параметры
+On load, firmware migrates older files when needed:
 
-| Поле         | Тип   | Диапазон | Описание                                                                                                                                                                                 |
-| ------------ | ----- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `brightness` | uint8 | 0..100   | Яркость матрицы в процентах. `0` — выкл. Значения в диапазоне 101..255 принимаются как устаревший формат и автоматически конвертируются в проценты: `percent = (raw × 100 + 127) / 255`. |
-| `candleOn`   | bool  | —        | Ручное состояние свечи (вкл/выкл). Игнорируется, если `location.enabled = true`. При `brightness = 0` принудительно сбрасывается в `false`.                                              |
-
----
-
-## Режимы работы
-
-### Ручной режим (`location.enabled = false`)
-
-Свеча включается и выключается явно через поле `candleOn`. Яркость задаётся полем `brightness`.
-
-### Автоматический режим (`location.enabled = true`)
-
-Состояние свечи определяется текущим солнечным режимом. Свеча **включена** во всех режимах, кроме `Day` (полный день).
-
-Солнечные режимы (`sunMode`):
-
-| Значение       | Описание                                              |
-| -------------- | ----------------------------------------------------- |
-| `Day`          | Солнце над горизонтом, свеча выключена                |
-| `Civil`        | Гражданские сумерки (высота −0°..−6°), свеча включена |
-| `Nautical`     | Навигационные сумерки (−6°..−12°), свеча включена     |
-| `Astronomical` | Астрономические сумерки (−12°..−18°), свеча включена  |
-| `Night`        | Ночь (высота ниже −18°), свеча включена               |
-
-Расписание вычисляется на основе алгоритма NOAA по координатам устройства и текущей дате (локальное время по часовому поясу `ntp_timezone`).
-
----
-
-## Очистка Wi-Fi учётных данных
-
-`POST /api/reset` обнуляет только поля `ssid` и `password`, сохраняет конфигурацию и перезапускает устройство. Все остальные настройки (NTP, координаты, яркость и пр.) **не изменяются**.
+- Legacy `wifi.ssid` and `wifi.password` values are moved to NVS if NVS does not already contain credentials.
+- Missing `moonLed` fields are filled with defaults and saved.
+- The runtime understands missing `timeSchedule` and keeps its built-in defaults.

@@ -11,7 +11,6 @@
 #include "wifi_module.h"
 
 namespace {
-// Периоды опроса и размеры стеков для задач планировщика.
 constexpr uint32_t kAnimFrameMs = 40;
 constexpr uint32_t kNetworkRetryMs = 1000;
 constexpr uint32_t kNetworkConnectedMs = 250;
@@ -25,7 +24,6 @@ TaskHandle_t networkTaskHandle = nullptr;
 TaskHandle_t i2cAnimTaskHandle = nullptr;
 bool s_webServerStarted = false;
 
-// Запускает web‑сервер при Wi‑Fi или captive portal.
 void ensure_network_services_started() {
   const bool staConnected = WiFi.status() == WL_CONNECTED;
   const bool captivePortalActive = wifi_is_captive_portal_active();
@@ -43,7 +41,6 @@ void ensure_network_services_started() {
 
 extern void i2c_anim_task();
 
-// Задача плавного обновления I2C-матрицы с фиксированным интервалом кадров.
 static void i2c_anim_task_freertos(void* pvParameters) {
   (void)pvParameters;
 
@@ -54,7 +51,6 @@ static void i2c_anim_task_freertos(void* pvParameters) {
   }
 }
 
-// Основная сетевая задача: reconnect Wi‑Fi, запуск сервисов и captive portal.
 static void network_service_task(void* pvParameters) {
   (void)pvParameters;
 
@@ -62,6 +58,7 @@ static void network_service_task(void* pvParameters) {
     wifi_handle_reconnect();
     ensure_network_services_started();
     ntp_handle();
+    web_server_handle();
 
     uint32_t delayMs = kNetworkRetryMs;
     if (wifi_is_captive_portal_active()) {
@@ -74,7 +71,6 @@ static void network_service_task(void* pvParameters) {
   }
 }
 
-// Создаёт и распределяет задачи FreeRTOS по ядрам ESP32.
 void freertos_init() {
   s_webServerStarted = false;
   ntp_init();
