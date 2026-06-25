@@ -2,7 +2,7 @@
 
 A smart ambient light device based on a 9x16 LED matrix that simulates a candle flame and can switch output automatically from local sunrise, sunset, and twilight calculations.
 
-The current firmware line is `1.3.x`. It runs on an ESP32-S3 board, serves a local web UI from LittleFS, exposes an HTTP API, and publishes Prometheus metrics.
+The current firmware version is `1.5.3`. It runs on an ESP32-S3 board, serves a local web UI from LittleFS, exposes an HTTP API, and publishes Prometheus metrics.
 
 ![candle matrix](doc/candle_matrix.png)
 
@@ -78,7 +78,7 @@ Hardware pins are configured in `platformio.ini` build flags:
 -D I2C_SDA_PIN=8
 -D I2C_SCL_PIN=9
 -D I2C_ISHUTD_PIN=4
--D MOON_LED_PIN=10
+-D MOON_LED_PIN=21
 ```
 
 Set `MOON_LED_PIN=-1` to compile the moon LED feature without driving a physical GPIO.

@@ -9,7 +9,7 @@ The implementation follows the NOAA solar calculation model and is used by:
 - sun position visualization;
 - Prometheus sun metrics.
 
-Firmware `1.5.x` also supports a fixed time schedule mode. That mode uses the same valid local time source but does not use solar calculations.
+Firmware `1.5.3` also supports a fixed time schedule mode. That mode uses the same valid local time source but does not use solar calculations.
 
 ## Inputs
 

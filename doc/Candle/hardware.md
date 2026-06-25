@@ -1,6 +1,6 @@
 # Hardware Pins
 
-Firmware `1.5.x` keeps board-specific LED pins in `platformio.ini` build flags.
+Firmware `1.5.3` keeps board-specific LED pins in `platformio.ini` build flags.
 
 ## Target Board
 
